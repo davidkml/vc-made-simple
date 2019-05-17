@@ -31,4 +31,12 @@ int create_and_write_file(const char* filepath, const char* content, mode_t mode
     Examples: .vms/index, .vms/branches/master
 */
 int remove_file(const char* filepath);
+
+/* 
+    Utility function for moving file named src into file named dst and possibly overwriting dst.
+    May only move src and dst files with .vms as prefixes.
+    Returns 0 on success, or non-zero integer error code on failure.
+*/
+int move_file(const char* src, const char* dst);
+
 #endif // UTILS_H

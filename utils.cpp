@@ -93,3 +93,34 @@ int remove_file(const char* filepath) {
 
     return 0;
 }
+
+int move_file(const char* src, const char* dst) {
+    if (src == NULL) {
+        cerr << "ERROR: Unable to move file. Provided source is not a valid string." << endl;
+        return 1;
+    }
+
+    if (dst == NULL) {
+        cerr << "ERROR: Unable to move file. Provided destination is not a valid string." << endl;
+        return 1;
+    }
+
+    if (!is_valid_path(src)) {
+        cerr << "ERROR: Unable to move file. Provided source is not a valid path within .vms directory." << endl;
+        return 1;
+    }
+
+    if (!is_valid_path(dst)) {
+        cerr << "ERROR: Unable to move file. Provided destination is not a valid path within .vms directory." << endl;
+        return 1;
+    }
+    int ret = rename(src, dst);
+
+    if (ret == -1) {
+        cerr << "ERROR: Unable to move file. " << strerror(errno) << endl;
+        return -1;   
+    }
+
+    return 0;
+
+}
