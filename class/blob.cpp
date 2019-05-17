@@ -1,4 +1,5 @@
 #include <iostream>
+#include <boost/compute/detail/sha1.hpp>
 
 #include "blob.hpp"
 
@@ -13,5 +14,6 @@ Blob::Blob(ifstream& filestream) {
 }
 
 string Blob::hash() {
-    return content;
+    boost::compute::detail::sha1 hash(content);
+    return string(hash);
 }
