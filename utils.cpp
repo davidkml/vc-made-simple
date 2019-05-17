@@ -57,12 +57,16 @@ int create_and_write_file(const char* filepath, const char* content, mode_t mode
         return -1;
     }
 
-    ssize_t nwrite = write(ofd, content, strlen(content));
+    if (content != NULL) {
 
-    if(nwrite == -1) {
-        cerr << "ERROR: Unable to write to file. " << strerror(errno) << endl;
-        close(ofd);
-        return -1;
+        ssize_t nwrite = write(ofd, content, strlen(content));
+
+        if(nwrite == -1) {
+            cerr << "ERROR: Unable to write to file. " << strerror(errno) << endl;
+            close(ofd);
+            return -1;
+        }
+
     }
 
     close(ofd);
