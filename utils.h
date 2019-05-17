@@ -23,4 +23,12 @@ int make_dir(const char* dirpath);
 */
 int create_and_write_file(const char* filepath, const char* content, mode_t mode);
 
+/* 
+    Utility function to remove file named filepath.
+    May only remove files with .vms as the prefix.
+    Returns 0 on success, or non-zero integer error code on failure.
+
+    Examples: .vms/index, .vms/branches/master
+*/
+int remove_file(const char* filepath);
 #endif // UTILS_H

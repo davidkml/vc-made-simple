@@ -72,3 +72,24 @@ int create_and_write_file(const char* filepath, const char* content, mode_t mode
     close(ofd);
     return 0;
 }
+
+int remove_file(const char* filepath) {
+    if (filepath == NULL) {
+        cerr << "ERROR: Unable to remove file. Provided name is not a valid string." << endl;
+        return 1;
+    }
+
+    if (!is_valid_path(filepath)) {
+        cerr << "ERROR: Unable to remove file. Provided name is not a valid path within .vms directory." << endl;
+        return 1;
+    }
+
+    int ret = unlink(filepath);
+
+    if (ret == -1) {
+        cerr << "ERROR: Unable to remove file. " << strerror(errno) << endl;
+        return -1;   
+    }
+
+    return 0;
+}
