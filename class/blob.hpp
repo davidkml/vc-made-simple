@@ -4,6 +4,12 @@
 #include <string>
 #include <fstream>
 
+namespace boost {
+    namespace serialization {
+        class access;
+    }
+}
+
 /*
 Class for storing the contents of files
 */
@@ -15,6 +21,14 @@ class Blob {
 
     private:
         std::string content;
+
+        friend class boost::serialization::access;
+
+        template<class Archive>
+        void serialize(Archive& ar, const unsigned int version) {
+            ar & content;
+        }
+
 };
 
 #endif // BLOB_HPP
