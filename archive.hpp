@@ -13,7 +13,7 @@
 
 
 template <class T>
-void save(const T& obj, const std::string filepath) {
+void save(const T& obj, const std::string& filepath) {
     std::ofstream ofs(filepath);
     if (!ofs.is_open()) {
         std::cerr << "ERROR: File could not be opened." << std::endl;
@@ -32,7 +32,7 @@ void save(const T& obj, const std::string filepath) {
 }
 
 template <class T>
-void restore(T& obj, const std::string filepath) {
+void restore(T& obj, const std::string& filepath) {
     std::ifstream ifs(filepath);
     if (!ifs.is_open()) {
         std::cerr << "ERROR: File could not be opened." << std::endl;
