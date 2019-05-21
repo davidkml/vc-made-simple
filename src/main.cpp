@@ -104,6 +104,14 @@ int main(int argc, char* argv[]) {
                     cout << "Unstaging file " << argv[i] << endl;
                 }
             }
-        } 
+        } else if (strcmp(argv[1], "commit") == 0) {
+            if (argc < 3) {
+                cerr << "ERROR: Need a commit message" << endl;
+                //TODO: add help text and usage
+                return -1;
+            }
+            //TODO: Implement logic for commit
+            cout << "Committing with message: " << argv[2] << endl;
+        }
     }
 }
