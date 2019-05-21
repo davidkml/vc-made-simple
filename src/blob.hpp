@@ -10,9 +10,7 @@ namespace boost {
     }
 }
 
-/*
-Class for storing the contents of files
-*/
+/* Class for storing the contents of files */
 class Blob {
     public:
         Blob();

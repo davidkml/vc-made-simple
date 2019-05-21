@@ -1,12 +1,12 @@
-#include "commit.hpp"
-#include "../archive.hpp"
-
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <boost/compute/detail/sha1.hpp>
 
-/* Helper function for getting hash of parent commit */
+#include "commit.hpp"
+#include "archive.hpp"
+
+/* Helper function for getting hash of parent commit when creating a new commit*/
 std::string get_parent_ref() {
     std::ifstream head_ifs(".vms/HEAD");
     if (!head_ifs.is_open()) {
@@ -77,4 +77,19 @@ std::map<std::string, std::string>& Commit::get_map() {
 
 void Commit::put_to_map(const std::string& key, const std::string& value) {
    file_to_hash[key] = value;
+}
+
+
+void Commit::print() {
+    char* dt = ctime(&datetime);
+    std::cout << "Time: " << dt;
+    std::cout << "Message: " << message << std:: endl;
+    std::cout << "First Parent: " << first_parent_ref << std:: endl;
+    std::cout << "Second Parent: " << second_parent_ref << std::endl; 
+    
+    std::map<std::string,std::string>::iterator it;
+    std::cout << "Map contains:" << std::endl;
+    for (it=file_to_hash.begin(); it!=file_to_hash.end(); ++it) {
+        std::cout << it->first << " => " << it->second << std::endl;
+    }
 }
