@@ -111,7 +111,14 @@ int main(int argc, char* argv[]) {
                 return -1;
             }
             //TODO: Implement logic for commit
+            //TODO: Add more options and checks
             cout << "Committing with message: " << argv[2] << endl;
+        } else if (strcmp(argv[1], "log") == 0) {
+            // TODO: Implement logic for log and more options and checks
+            cout << "Printing log of commits" << endl;
+        } else if (strcmp(argv[1], "status") == 0) {
+            // TODO: Implement logic for status
+            cout << "Printing repository status" << endl;
         }
     }
 }
