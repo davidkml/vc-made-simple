@@ -29,16 +29,7 @@ bool is_valid_file(char* filepath) {
 }
 
 struct option init_opts[] = {
-    {"help", no_argument, NULL, 'h'},
     {"force", no_argument, NULL, 'f'}
-};
-
-struct option stage_opts[] = {
-    {"help", no_argument, NULL, 'h'}
-};
-
-struct option unstage_opts[] = {
-    {"help", no_argument, NULL, 'h'}
 };
 
 
@@ -62,10 +53,6 @@ int main(int argc, char* argv[]) {
                 // For optional option argument
                 // TODO: Implement logic for each option
                 switch (ch) {
-                    case 'h': {
-                        cout << "Help text for init" << endl;
-                        break;
-                    }
                     case 'f': {
                         cout << "Force reinitialize repository" << endl;
                         break;
@@ -88,20 +75,28 @@ int main(int argc, char* argv[]) {
         }
 
         if (strcmp(argv[1], "stage") == 0 || strcmp(argv[1], "unstage") == 0) {
-            if (argc < 3 || !is_valid_file(argv[2])) {
-                cerr << "ERROR: Missing or invalid filename" << endl;
+            if (argc < 3) {
+                cerr << "ERROR: Need a file name" << endl;
                 // TODO: add help text
                 return -1;
             }
             if (strcmp(argv[1], "stage") == 0) {
                 for (int i = 2; i < argc; i++) {
                     //TODO: Implement logic for stage
-                    cout << "Staging file " << argv[i] << endl;
+                    if (is_valid_file(argv[i])) {
+                        cout << "Staging file " << argv[i] << endl;
+                    } else {
+                        cerr << argv[i] << " is not a valid file." << endl;
+                    }
                 }
             } else { // argv[1] == unstage 
                 for (int i = 2; i < argc; i++) {
                     //TODO: Implement logic for unstage
-                    cout << "Unstaging file " << argv[i] << endl;
+                    if (is_valid_file(argv[i])) {
+                        cout << "Unstaging file " << argv[i] << endl;
+                    } else {
+                        cerr << argv[i] << " is not a valid file." << endl;
+                    }
                 }
             }
         } else if (strcmp(argv[1], "commit") == 0) {
@@ -120,5 +115,6 @@ int main(int argc, char* argv[]) {
             // TODO: Implement logic for status
             cout << "Printing repository status" << endl;
         }
+        // More commands on the way
     }
 }
