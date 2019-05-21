@@ -4,6 +4,9 @@
 #include <unistd.h>
 #include <getopt.h>
 
+#include <sys/types.h> 
+#include <sys/dir.h>
+
 
 using namespace std;
 
@@ -26,6 +29,26 @@ bool is_valid_file(char* filepath) {
         return false;
     }
     return true;
+}
+
+bool is_valid_dir(char* dirpath) {
+    if (dirpath == NULL) {
+        return false;
+    }
+    struct stat s;
+    int ret = stat(dirpath, &s);
+    if (ret == -1 || !S_ISDIR(s.st_mode)) {
+        return false;
+    }
+    return true;
+}
+
+bool has_trailing_slash(char* dirpath) {
+    return (*(dirpath + strlen(dirpath) - 1) ==  '/');
+}
+
+void remove_trailing_slash(char* dirpath) {
+    *(dirpath + strlen(dirpath) - 1) = '\0';
 }
 
 struct option init_opts[] = {
@@ -83,20 +106,32 @@ int main(int argc, char* argv[]) {
             if (strcmp(argv[1], "stage") == 0) {
                 for (int i = 2; i < argc; i++) {
                     //TODO: Implement logic for stage
-                    if (is_valid_file(argv[i])) {
+                    //TODO: Clean up and refactor code for staging of directories
+                    if (is_valid_dir(argv[i])) {
+                        if (has_trailing_slash(argv[i])) {
+                            remove_trailing_slash(argv[i]);
+                        }
+
+                        DIR *dirptr = opendir(argv[i]);
+                        struct dirent *entry = readdir(dirptr);
+                        while (entry != NULL) {
+                            char dir_filename[BUFSIZ];
+                            sprintf(dir_filename, "%s/%s", argv[i], entry->d_name);
+                            if (is_valid_file(dir_filename)) {
+                                cout << "Staging file" << entry->d_name << endl;
+                            }
+                            entry = readdir(dirptr);
+                        }
+                    }else if (is_valid_file(argv[i])) {
                         cout << "Staging file " << argv[i] << endl;
                     } else {
-                        cerr << argv[i] << " is not a valid file." << endl;
+                        cerr << argv[i] << " is not a valid file or directory." << endl;
                     }
                 }
             } else { // argv[1] == unstage 
                 for (int i = 2; i < argc; i++) {
                     //TODO: Implement logic for unstage
-                    if (is_valid_file(argv[i])) {
-                        cout << "Unstaging file " << argv[i] << endl;
-                    } else {
-                        cerr << argv[i] << " is not a valid file." << endl;
-                    }
+                    cout << "Unstaging file " << argv[i] << endl;
                 }
             }
         } else if (strcmp(argv[1], "commit") == 0) {
