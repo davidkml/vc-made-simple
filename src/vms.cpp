@@ -1,3 +1,6 @@
+#include <sys/types.h> 
+#include <sys/dir.h>
+
 #include <map>
 #include <boost/serialization/map.hpp>
 
@@ -15,6 +18,23 @@
 #include "blob.hpp"
 
 using namespace std;
+
+int move_from_cache_to_objects(const string& hash) {
+    ostringstream cache_path;
+    cache_path << ".vms/cache/" << hash;
+
+    ostringstream objects_path;
+    objects_path << ".vms/objects/" << hash;
+    
+    int ret = move_file(cache_path.str().c_str(), objects_path.str().c_str());
+
+    if (ret != 0) {
+        cerr << "ERROR: Unable to move staged changes from cache to objects directory" << endl;
+        return -1;
+    }
+    return 0;
+}
+
 int vms_init() {
 
     // Initialize directories
@@ -104,6 +124,75 @@ int vms_unstage(char* filepath) {
 }
 
 int vms_commit(char* msg) {
+    // TODO: Fix and be more rigorous with error handling and propagation
+    // Load index
+    map<string, string> index;  
+    restore< map<string, string> >(index, ".vms/index");
+    
+    // Check if any tracked changes to commit, if not print and return, otherwise continue
+    if (index.empty()) {
+        cout << "No changes staged to commit" << endl;
+        return -1;
+    }
+
+    // Create new commit and add new entries to its internal map and move files from cache to objects directory
+    Commit commit(msg);
+    cout << "commit before adding new elements" << endl;
+    commit.print();
+
+    map<string,string>::iterator it;
+    std::cout << "Map contains:" << std::endl;
+    for (it=index.begin(); it!=index.end(); ++it) {
+        commit.put_to_map(it->first, it->second);
+        move_from_cache_to_objects(it->second);
+    }
+    cout << "commit after adding new elements" << endl;
+    commit.print();
+
+
+    // Iterate through cache directory, clearing it
+    DIR *dirptr = opendir(".vms/cache");
+    struct dirent *entry = readdir(dirptr);
+    
+    char cache_file_path[BUFSIZ];
+    
+    while (entry != NULL) {
+
+        sprintf(cache_file_path, "%s/%s", ".vms/cache", entry->d_name);
+        remove_file(cache_file_path);
+
+        entry = readdir(dirptr);
+
+    }
+
+    // Clear index and save it
+    index.clear();
+    save< map<string, string> >(index, ".vms/index");
+
+    // Change position of branch pointed to by HEAD
+    string commit_hash = commit.hash();
+
+    ifstream head_ifs(".vms/HEAD");
+    if (!head_ifs.is_open()) {
+        cerr << "Unable to open file .vms/HEAD" << endl;
+        // TODO: add exception handling code
+    }
+
+    string branch_name;
+    getline(head_ifs, branch_name);
+    head_ifs.close();
+
+    std::ostringstream branch_fpath;
+    branch_fpath << ".vms/branches/" << branch_name;
+
+    create_and_write_file(branch_fpath.str().c_str(), commit_hash.c_str(), 0644);
+
+    // Serialize and save your commit.
+    ostringstream obj_path;
+    obj_path << ".vms/objects/" << commit_hash;
+    save<Commit>(commit, obj_path.str());
+    // add chmod
+
     return 0;
 }
 
