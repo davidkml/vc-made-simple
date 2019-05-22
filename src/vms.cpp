@@ -76,6 +76,7 @@ int vms_stage(char* filepath) {
 
     // Puts filepath and hash into the index map
     index[filepath] = file_hash;
+    save< map<string, string> >(index, ".vms/index");
 
     // Save it in a temporary folder. This serves as cache.
     ostringstream obj_cache_path;
@@ -98,5 +99,15 @@ int vms_log() {
 }
 
 int vms_status() {
+    // Load index
+    map<string, string> index;  
+    restore< map<string, string> >(index, ".vms/index");
+
+    std::map<std::string,std::string>::iterator it;
+    std::cout << "Map contains:" << std::endl;
+    for (it=index.begin(); it!=index.end(); ++it) {
+        std::cout << it->first << " => " << it->second << std::endl;
+    }
+
     return 0;
 }
