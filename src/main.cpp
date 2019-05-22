@@ -108,7 +108,7 @@ int main(int argc, char* argv[]) {
                 for (int i = 2; i < argc; i++) {
                     //TODO: Implement logic for stage
                     //TODO: Clean up and refactor code for staging of directories
-                    if (is_valid_dir(argv[i])) {
+                    if (is_valid_dir(argv[i]) || is_tracked_file(argv[i])) {
                         if (has_trailing_slash(argv[i])) {
                             remove_trailing_slash(argv[i]);
                         }
