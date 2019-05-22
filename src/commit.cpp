@@ -67,7 +67,6 @@ std::string Commit::hash() {
     for (it=file_to_hash.begin(); it!=file_to_hash.end(); ++it) {
         oss << it->first << it->second;
     }
-    std::cout << "obj string before hashing: " << oss.str() << std::endl;
 
     boost::compute::detail::sha1 hash(oss.str());
 
