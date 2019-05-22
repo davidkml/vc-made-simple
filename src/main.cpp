@@ -51,13 +51,7 @@ void remove_trailing_slash(char* dirpath) {
     *(dirpath + strlen(dirpath) - 1) = '\0';
 }
 
-struct option init_opts[] = {
-    {"force", no_argument, NULL, 'f'}
-};
-
-
 int main(int argc, char* argv[]) {
-    int ch;
 
     if (argc < 2) {
         cerr << "Usage: " <<  argv[0] << " <command> [<args>]" << endl;
@@ -70,26 +64,7 @@ int main(int argc, char* argv[]) {
             cerr << "ERROR: Repository is already initialized" << endl;
             return -1;
         }
-
-        while (optind < argc) {
-            if ((ch = getopt_long(argc, argv, "", init_opts, NULL)) != -1) {
-                // For optional option argument
-                // TODO: Implement logic for each option
-                switch (ch) {
-                    case 'f': {
-                        cout << "Force reinitialize repository" << endl;
-                        break;
-                    }
-                    default:
-                        break;
-                }
-            } else {
-                // For mandatory positional argument
-                // TODO: Implement logic for init
-                cout << "initializing" << endl;
-                optind++;  // Skip to the next argument
-            }
-        }
+        cout << "initializing" << endl;
     } else {
         if (!is_initialized()) {
             cerr << "ERROR: Repository not initialized" << endl;
