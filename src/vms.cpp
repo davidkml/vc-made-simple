@@ -77,11 +77,11 @@ int vms_stage(char* filepath) {
 
     string file_hash = file_blob.hash();
 
-    // Puts filepath and hash into the index map
+    // Puts filepath and hash into the index map and save the updated index
     index[filepath] = file_hash;
     save< map<string, string> >(index, ".vms/index");
 
-    // Save it in a temporary folder. This serves as cache.
+    // Save blob in a temporary folder. This serves as cache.
     ostringstream obj_cache_path;
     obj_cache_path << ".vms/cache/" << file_hash;
     save<Blob>(file_blob, obj_cache_path.str());
@@ -90,6 +90,16 @@ int vms_stage(char* filepath) {
 }
 
 int vms_unstage(char* filepath) {
+    // Load index
+    map<string, string> index;  
+    restore< map<string, string> >(index, ".vms/index");
+
+    // remove entry from the index map and save the updated index
+    index.erase(string(filepath));
+    save< map<string, string> >(index, ".vms/index");
+
+    // Note: decide to not remove cache because unnecessary: will clear cache after commits
+    
     return 0;
 }
 
