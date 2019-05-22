@@ -7,7 +7,12 @@
 #include <sys/types.h> 
 #include <sys/dir.h>
 
+#include <map>
+#include <boost/serialization/map.hpp>
+
+#include "archive.hpp"
 #include "vms.hpp"
+
 
 
 using namespace std;
@@ -19,6 +24,22 @@ bool is_initialized() {
         return false;
     }
     return true;
+}
+
+bool is_tracked_file(char* filepath) {
+    if (filepath == NULL) {
+        return false;
+    }
+
+    // Load index
+    map<string, string> index;  
+    restore< map<string, string> >(index, ".vms/index");
+
+    map<string, string>::iterator it;
+    it = index.find(string(filepath));
+
+    return it != index.end();
+
 }
 
 bool is_valid_file(char* filepath) {
@@ -123,8 +144,36 @@ int main(int argc, char* argv[]) {
             } else { // argv[1] == unstage 
                 for (int i = 2; i < argc; i++) {
                     //TODO: Implement logic for unstage
-                    cout << "Unstaging file " << argv[i] << endl;
-                    vms_unstage(argv[i]);
+                    if (is_valid_dir(argv[i])) {
+                        if (has_trailing_slash(argv[i])) {
+                            remove_trailing_slash(argv[i]);
+                        }
+
+                        DIR *dirptr = opendir(argv[i]);
+                        struct dirent *entry = readdir(dirptr);
+
+                        while (entry != NULL) {
+
+                            char dir_filename[BUFSIZ];
+                            sprintf(dir_filename, "%s/%s", argv[i], entry->d_name);
+
+                            if (is_tracked_file(dir_filename)) {
+
+                                cout << "Unstaging file " << dir_filename << endl;
+                                vms_unstage(dir_filename);
+
+                            }
+
+                            entry = readdir(dirptr);
+
+                        }
+
+                    } else if (is_tracked_file(argv[i])) {
+                        cout << "Unstaging file " << argv[i] << endl;
+                        vms_unstage(argv[i]);
+                    } else {
+                        cout << "ERROR No file named " << argv[i] << "currently being tracked" << endl;
+                    }
                 }
                 return 0;
             }
