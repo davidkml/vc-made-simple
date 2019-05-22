@@ -14,13 +14,16 @@ std::string get_parent_ref() {
         // TODO: add exception handling code
     }
 
-    std::string branch_fpath;
-    std::getline(head_ifs, branch_fpath);
+    std::string branch_name;
+    std::getline(head_ifs, branch_name);
     head_ifs.close();
 
-    std::ifstream branch_ifs(branch_fpath);
+    std::ostringstream branch_fpath;
+    branch_fpath << ".vms/branches/" << branch_name;
+
+    std::ifstream branch_ifs(branch_fpath.str());
     if (!branch_ifs.is_open()) {
-        std::cerr << "Unable to open file " << branch_fpath << std::endl;
+        std::cerr << "Unable to open file " << branch_fpath.str() << std::endl;
         // TODO: add exception handling code
     }
 
