@@ -52,7 +52,7 @@ int main(int argc, char* argv[]) {
                 for (int i = 2; i < argc; i++) {
                     //TODO: Implement logic for stage
                     //TODO: Clean up and refactor code for staging of directories
-                    if (is_valid_dir(argv[i]) || is_staged_file(argv[i])) {
+                    if (is_valid_dir(argv[i])) {
                         if (has_trailing_slash(argv[i])) {
                             remove_trailing_slash(argv[i]);
                         }
@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
                             char dir_filename[BUFSIZ];
                             sprintf(dir_filename, "%s/%s", argv[i], entry->d_name);
 
-                            if (is_valid_file(dir_filename)) {
+                            if (is_valid_file(dir_filename) || is_tracked_file(dir_filename)) {
 
                                 cout << "Staging file " << dir_filename << endl;
                                 vms_stage(dir_filename);
@@ -75,7 +75,7 @@ int main(int argc, char* argv[]) {
                             entry = readdir(dirptr);
 
                         }
-                    }else if (is_valid_file(argv[i])) {
+                    }else if (is_valid_file(argv[i]) || is_tracked_file(argv[i])) {
                         cout << "Staging file " << argv[i] << endl;
                         vms_stage(argv[i]);
                     } else {

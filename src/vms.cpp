@@ -35,6 +35,12 @@ int move_from_cache_to_objects(const string& hash) {
         cerr << "ERROR: Unable to move staged changes from cache to objects directory" << endl;
         return -1;
     }
+        // Change permissions of generated file.
+    ret = chmod(objects_path.str().c_str(), 0444);
+    if (ret != 0) {
+        cerr << "Failed to change permissions of file." << objects_path.str() << endl;
+    }
+
     return 0;
 }
 
@@ -109,13 +115,6 @@ int vms_stage(char* filepath) {
     ostringstream obj_cache_path;
     obj_cache_path << ".vms/cache/" << file_hash;
     save<Blob>(file_blob, obj_cache_path.str());
-    
-    // Change permissions of generated file.
-    int ret = chmod(obj_cache_path.str().c_str(), 0444);
-    if (ret != 0) {
-        cerr << "Failed to change permissions of file." << obj_cache_path.str() << endl;
-    }
-
 
     return 0;
 }
