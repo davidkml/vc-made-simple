@@ -12,6 +12,7 @@
 
 #include "access.hpp"
 #include "archive.hpp"
+#include "commit.hpp"
 
 using namespace std;
 
@@ -37,6 +38,26 @@ bool is_staged_file(char* filepath) {
     it = index.find(string(filepath));
 
     return it != index.end();
+
+}
+
+bool is_tracked_file(char* filepath) {
+    if (filepath == NULL) {
+        return false;
+    }
+
+    // Load parent commit. 
+    string parent_hash = get_parent_ref();
+    
+    ostringstream parent_fpath;
+    parent_fpath << ".vms/objects/" << parent_hash;
+
+
+    Commit parent_commit;
+    restore<Commit>(parent_commit, parent_fpath.str());
+
+    // Check if file found in parent commit
+    return parent_commit.map_contains(string(filepath));
 
 }
 
@@ -80,4 +101,21 @@ std::string get_branch_path() {
 
     return branch_fpath.str();
 
+}
+
+std::string get_parent_ref() {
+
+    std::string branch_fpath = get_branch_path();
+
+    std::ifstream branch_ifs(branch_fpath);
+    if (!branch_ifs.is_open()) {
+        std::cerr << "Unable to open file " << branch_fpath << std::endl;
+        // TODO: add exception handling code
+    }
+
+    std::string parent_commit_hash;
+    getline(branch_ifs, parent_commit_hash);
+    branch_ifs.close();
+
+    return parent_commit_hash;
 }

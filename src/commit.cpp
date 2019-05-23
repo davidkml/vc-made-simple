@@ -3,6 +3,7 @@
 #include <sstream>
 #include <boost/compute/detail/sha1.hpp>
 
+
 #include "commit.hpp"
 #include "archive.hpp"
 #include "access.hpp"
@@ -86,6 +87,16 @@ std::map<std::string, std::string>& Commit::get_map() {
 
 void Commit::put_to_map(const std::string& key, const std::string& value) {
    file_to_hash[key] = value;
+}
+
+bool Commit::map_contains(const std::string& key) {
+    if (file_to_hash.empty()) {
+        return false;
+    }
+    std::map<std::string, std::string>::iterator it;
+    it = file_to_hash.find(key);
+
+    return it != file_to_hash.end();
 }
 
 

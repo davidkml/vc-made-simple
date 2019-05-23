@@ -10,10 +10,15 @@ bool is_initialized();
 
 bool is_staged_file(char* filepath);
 
+bool is_tracked_file(char* filepath);
+
 bool is_valid_file(char* filepath);
 
 bool is_valid_dir(char* dirpath);
 
 std::string get_branch_path();
+
+std::string get_parent_ref();
+
 
 #endif // ACCESS_HPP

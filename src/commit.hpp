@@ -21,7 +21,8 @@ class Commit {
         void print(); // delete after testing
         std::map<std::string, std::string>& get_map();
         void put_to_map(const std::string& key, const std::string& value);
-
+        bool map_contains(const std::string& key);
+        
     private:
         std::time_t datetime;
         std::string message;
