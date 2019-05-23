@@ -35,6 +35,7 @@ int move_from_cache_to_objects(const string& hash) {
     return 0;
 }
 
+
 int vms_init() {
 
     // Initialize directories
@@ -125,6 +126,8 @@ int vms_unstage(char* filepath) {
 
 int vms_commit(char* msg) {
     // TODO: Fix and be more rigorous with error handling and propagation
+    // TODO: Reuse helper functions (e.g. for checking if file is not a directory and for iterating through directory entries)
+    // TODO: Add code to push formatted "commit string" onto log, meaning must add method to Commit class also to build string.
     // Load index
     map<string, string> index;  
     restore< map<string, string> >(index, ".vms/index");
@@ -137,17 +140,16 @@ int vms_commit(char* msg) {
 
     // Create new commit and add new entries to its internal map and move files from cache to objects directory
     Commit commit(msg);
-    cout << "commit before adding new elements" << endl;
-    commit.print();
+    // cout << "commit before adding new elements" << endl;
+    // commit.print();
 
     map<string,string>::iterator it;
-    std::cout << "Map contains:" << std::endl;
     for (it=index.begin(); it!=index.end(); ++it) {
         commit.put_to_map(it->first, it->second);
         move_from_cache_to_objects(it->second);
     }
-    cout << "commit after adding new elements" << endl;
-    commit.print();
+    // cout << "commit after adding new elements" << endl;
+    // commit.print();
 
 
     // Iterate through cache directory, clearing it
@@ -155,11 +157,16 @@ int vms_commit(char* msg) {
     struct dirent *entry = readdir(dirptr);
     
     char cache_file_path[BUFSIZ];
+    struct stat s;
     
     while (entry != NULL) {
 
         sprintf(cache_file_path, "%s/%s", ".vms/cache", entry->d_name);
-        remove_file(cache_file_path);
+        stat(cache_file_path, &s);
+
+        if (!S_ISDIR(s.st_mode)) {
+            remove_file(cache_file_path);
+        }
 
         entry = readdir(dirptr);
 
