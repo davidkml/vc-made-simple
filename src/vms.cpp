@@ -22,6 +22,8 @@
 
 using namespace std;
 
+const string DELETED_FILE = "DELETED";
+
 int move_from_cache_to_objects(const string& hash) {
     ostringstream cache_path;
     cache_path << ".vms/cache/" << hash;
@@ -90,13 +92,22 @@ int vms_init() {
 }
 
 int vms_stage(char* filepath) {
-
     // TODO: add support for staging change to deleted file 
     // (e.g. if previously tracked file but file now is deleted)
+
+
 
     // Load index
     map<string, string> index;  
     restore< map<string, string> >(index, ".vms/index");
+
+    // if file was previously being tracked but is now deleted
+    if(is_tracked_file(filepath) && !is_valid_file(filepath)) {
+        // Puts filepath into index map with special string, save the updated index, and return
+        index[filepath] = DELETED_FILE;
+        save< map<string, string> >(index, ".vms/index");
+        return 0;
+    } // else file exists
 
     // Blob the file's contents and get its hash
     ifstream ifilestream(filepath);
