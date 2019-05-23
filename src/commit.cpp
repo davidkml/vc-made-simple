@@ -72,6 +72,10 @@ void Commit::put_to_map(const std::string& key, const std::string& value) {
    file_to_hash[key] = value;
 }
 
+void Commit::remove_from_map(const std::string& key) {
+    file_to_hash.erase(key);
+}
+
 bool Commit::map_contains(const std::string& key) {
     if (file_to_hash.empty()) {
         return false;

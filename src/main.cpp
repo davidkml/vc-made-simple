@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
                         cout << "Staging file " << argv[i] << endl;
                         vms_stage(argv[i]);
                     } else {
-                        cerr << argv[i] << " is not a valid file or directory." << endl;
+                        cerr << argv[i] << " is not a valid or currently tracked file or directory." << endl;
                     }
                 }
 

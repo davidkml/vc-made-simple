@@ -156,15 +156,20 @@ int vms_commit(char* msg) {
         return -1;
     }
 
-    // Create new commit and add new entries to its internal map and move files from cache to objects directory
+    // Create new commit, update its internal map, and move files from cache to objects directory
     Commit commit(msg);
     cout << "commit before adding new elements" << endl;
     commit.print();
 
     map<string,string>::iterator it;
     for (it=index.begin(); it!=index.end(); ++it) {
-        commit.put_to_map(it->first, it->second);
-        move_from_cache_to_objects(it->second);
+        // if staged is file mapped to DELETED_FILE string, remove it from commit tree
+        if (it->second == DELETED_FILE) {
+            commit.remove_from_map(it->first);
+        } else { // puts entry to commit map and move files from cache to objects directory
+            commit.put_to_map(it->first, it->second);
+            move_from_cache_to_objects(it->second);
+        }
     }
     cout << "commit after adding new elements" << endl;
     commit.print();
