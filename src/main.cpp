@@ -76,8 +76,10 @@ int main(int argc, char* argv[]) {
 
                         }
                     }else if (is_valid_file(argv[i]) || is_tracked_file(argv[i])) {
+                        
                         cout << "Staging file " << argv[i] << endl;
                         vms_stage(argv[i]);
+
                     } else {
                         cerr << argv[i] << " is not a valid or currently tracked file or directory." << endl;
                     }

@@ -95,8 +95,6 @@ int vms_stage(char* filepath) {
     // TODO: add support for staging change to deleted file 
     // (e.g. if previously tracked file but file now is deleted)
 
-
-
     // Load index
     map<string, string> index;  
     restore< map<string, string> >(index, ".vms/index");
@@ -107,7 +105,12 @@ int vms_stage(char* filepath) {
         index[filepath] = DELETED_FILE;
         save< map<string, string> >(index, ".vms/index");
         return 0;
-    } // else file exists
+        
+    } else if (!is_modified_file(filepath)) {    // if file has not been modified since last commit, do not stage
+        cout << "No changes to be staged in file " << filepath << endl;
+        return 0;
+    }
+
 
     // Blob the file's contents and get its hash
     ifstream ifilestream(filepath);
@@ -265,20 +268,41 @@ int vms_status() {
     cout << endl;
 
 
-    // List all files currently staged. (for)
+    // List all files currently staged. (and list type of modification: modified, deleted)
+    map<string, string> index;  
+    restore< map<string, string> >(index, ".vms/index");
+    map<string,string>::iterator it;
+    cout << "=== Staged Files ===" << endl;
+
+    for (it=index.begin(); it!=index.end(); ++it) {
+        // if new (not currently tracked)
+        if (!is_tracked_file(it->first.c_str())) {
+
+            cout << "new file:    " << it->first << endl;
+
+        } else if (it->second == DELETED_FILE) {    // if deleted (mapped to delete)
+
+            cout << "deleted:     " << it->first << endl;
+
+        } else { // if modified
+            cout << "modified:    " << it->first << endl;
+        } 
+
+        // Note: the order of these checks is important
+        
+    }
+
+
     // List all files that have been staged and have been modified since staging (and the type of modification)
     // list all tracked files that have not been staged and have been modified (and the type of modification)
     // list all deleted files that used to be tracked
     // list all untracked files in this directory
-    // Load index
-    map<string, string> index;  
-    restore< map<string, string> >(index, ".vms/index");
 
-    std::map<std::string,std::string>::iterator it;
-    std::cout << "Map contains:" << std::endl;
-    for (it=index.begin(); it!=index.end(); ++it) {
-        std::cout << it->first << " => " << it->second << std::endl;
-    }
+    // std::map<std::string,std::string>::iterator it;
+    // std::cout << "Map contains:" << std::endl;
+    // for (it=index.begin(); it!=index.end(); ++it) {
+    //     std::cout << it->first << " => " << it->second << std::endl;
+    // }
 
     return 0;
 }

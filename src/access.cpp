@@ -12,6 +12,7 @@
 
 #include "access.hpp"
 #include "archive.hpp"
+#include "blob.hpp"
 #include "commit.hpp"
 
 using namespace std;
@@ -41,7 +42,7 @@ bool is_staged_file(char* filepath) {
 
 }
 
-bool is_tracked_file(char* filepath) {
+bool is_tracked_file(const char* filepath) {
     if (filepath == NULL) {
         return false;
     }
@@ -58,6 +59,38 @@ bool is_tracked_file(char* filepath) {
 
     // Check if file found in parent commit
     return parent_commit.map_contains(string(filepath));
+
+}
+
+bool is_modified_file(const char* filepath) {
+
+    if (filepath == NULL) {
+        return false;
+    }
+
+    // Load parent commit
+    Commit parent_commit;
+    string parent_hash = get_parent_ref();
+    ostringstream parent_fpath;
+    parent_fpath << ".vms/objects/" << parent_hash;
+
+    restore<Commit>(parent_commit, parent_fpath.str());
+
+    // Get reference to commit's map and get the hash of the file if it is found
+    map<string, string>& parent_map_ref = parent_commit.get_map();
+
+    map<string, string>::iterator it;
+    it = parent_map_ref.find(string(filepath));
+
+    if (it == parent_map_ref.end()) {
+        return true;    // Not being tracked, so by definition is modified relative to "tracked version"
+    } 
+
+    // get its hash and compare it with hash of file of same name in working directory
+    ifstream file_ifs(filepath);
+    Blob file_contents(file_ifs);
+
+    return file_contents.hash() != it->second;
 
 }
 

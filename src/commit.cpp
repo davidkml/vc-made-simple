@@ -69,7 +69,11 @@ std::map<std::string, std::string>& Commit::get_map() {
 }
 
 void Commit::put_to_map(const std::string& key, const std::string& value) {
-   file_to_hash[key] = value;
+    file_to_hash[key] = value;
+}
+
+std::map<std::string, std::string>::iterator Commit::find_in_map(const std::string& key) {
+    return file_to_hash.find(key);
 }
 
 void Commit::remove_from_map(const std::string& key) {
