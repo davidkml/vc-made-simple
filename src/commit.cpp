@@ -8,23 +8,6 @@
 #include "archive.hpp"
 #include "access.hpp"
 
-/* Helper function for getting hash of parent commit when creating a new commit*/
-std::string get_parent_ref() {
-
-    std::string branch_fpath = get_branch_path();
-
-    std::ifstream branch_ifs(branch_fpath);
-    if (!branch_ifs.is_open()) {
-        std::cerr << "Unable to open file " << branch_fpath << std::endl;
-        // TODO: add exception handling code
-    }
-
-    std::string commit_hash;
-    getline(branch_ifs, commit_hash);
-    branch_ifs.close();
-
-    return commit_hash;
-}
 
 Commit::Commit() {
     std::chrono::time_point<std::chrono::system_clock> sys_epoch;
