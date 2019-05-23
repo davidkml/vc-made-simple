@@ -1,4 +1,5 @@
 #include <sys/types.h> 
+#include <sys/stat.h>
 #include <sys/dir.h>
 
 #include <map>
@@ -106,6 +107,13 @@ int vms_stage(char* filepath) {
     ostringstream obj_cache_path;
     obj_cache_path << ".vms/cache/" << file_hash;
     save<Blob>(file_blob, obj_cache_path.str());
+    
+    // Change permissions of generated file.
+    int ret = chmod(obj_cache_path.str().c_str(), 0444);
+    if (ret != 0) {
+        cerr << "Failed to change permissions of file." << obj_cache_path.str() << endl;
+    }
+
 
     return 0;
 }
@@ -198,7 +206,12 @@ int vms_commit(char* msg) {
     ostringstream obj_path;
     obj_path << ".vms/objects/" << commit_hash;
     save<Commit>(commit, obj_path.str());
-    // add chmod
+
+    // Change permissions of generated file.
+    int ret = chmod(obj_path.str().c_str(), 0444);
+    if (ret != 0) {
+        cerr << "Failed to change permissions of file." << obj_path.str() << endl;
+    }
 
     return 0;
 }
