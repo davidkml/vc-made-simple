@@ -20,7 +20,7 @@ bool is_initialized() {
     return true;
 }
 
-bool is_tracked_file(char* filepath) {
+bool is_staged_file(char* filepath) {
     if (filepath == NULL) {
         return false;
     }

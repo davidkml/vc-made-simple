@@ -6,7 +6,7 @@ Collection of various file and directory access helper functions for vms
 
 bool is_initialized();
 
-bool is_tracked_file(char* filepath);
+bool is_staged_file(char* filepath);
 
 bool is_valid_file(char* filepath);
 
