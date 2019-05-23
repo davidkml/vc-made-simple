@@ -17,6 +17,8 @@
 #include "archive.hpp"
 #include "commit.hpp"
 #include "blob.hpp"
+#include "access.hpp"
+
 
 using namespace std;
 
@@ -134,7 +136,6 @@ int vms_unstage(char* filepath) {
 
 int vms_commit(char* msg) {
     // TODO: Fix and be more rigorous with error handling and propagation
-    // TODO: Reuse helper functions (e.g. for checking if file is not a directory and for iterating through directory entries)
     // TODO: Add code to push formatted "commit string" onto log, meaning must add method to Commit class also to build string.
     // Load index
     map<string, string> index;  
@@ -148,16 +149,16 @@ int vms_commit(char* msg) {
 
     // Create new commit and add new entries to its internal map and move files from cache to objects directory
     Commit commit(msg);
-    // cout << "commit before adding new elements" << endl;
-    // commit.print();
+    cout << "commit before adding new elements" << endl;
+    commit.print();
 
     map<string,string>::iterator it;
     for (it=index.begin(); it!=index.end(); ++it) {
         commit.put_to_map(it->first, it->second);
         move_from_cache_to_objects(it->second);
     }
-    // cout << "commit after adding new elements" << endl;
-    // commit.print();
+    cout << "commit after adding new elements" << endl;
+    commit.print();
 
 
     // Iterate through cache directory, clearing it
@@ -165,14 +166,12 @@ int vms_commit(char* msg) {
     struct dirent *entry = readdir(dirptr);
     
     char cache_file_path[BUFSIZ];
-    struct stat s;
     
     while (entry != NULL) {
 
         sprintf(cache_file_path, "%s/%s", ".vms/cache", entry->d_name);
-        stat(cache_file_path, &s);
 
-        if (!S_ISDIR(s.st_mode)) {
+        if (is_valid_file(cache_file_path)) {
             remove_file(cache_file_path);
         }
 
@@ -186,21 +185,10 @@ int vms_commit(char* msg) {
 
     // Change position of branch pointed to by HEAD
     string commit_hash = commit.hash();
-
-    ifstream head_ifs(".vms/HEAD");
-    if (!head_ifs.is_open()) {
-        cerr << "Unable to open file .vms/HEAD" << endl;
-        // TODO: add exception handling code
-    }
-
-    string branch_name;
-    getline(head_ifs, branch_name);
-    head_ifs.close();
-
-    std::ostringstream branch_fpath;
-    branch_fpath << ".vms/branches/" << branch_name;
-
-    create_and_write_file(branch_fpath.str().c_str(), commit_hash.c_str(), 0644);
+    
+    string branch_fpath = get_branch_path();
+    
+    create_and_write_file(branch_fpath.c_str(), commit_hash.c_str(), 0644);
 
     // Serialize and save your commit.
     ostringstream obj_path;

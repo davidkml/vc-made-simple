@@ -1,4 +1,3 @@
-#include "access.hpp"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -7,6 +6,11 @@
 #include <map>
 #include <boost/serialization/map.hpp>
 
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
+#include "access.hpp"
 #include "archive.hpp"
 
 using namespace std;
@@ -58,4 +62,22 @@ bool is_valid_dir(char* dirpath) {
         return false;
     }
     return true;
+}
+
+std::string get_branch_path() {
+    std::ifstream head_ifs(".vms/HEAD");
+    if (!head_ifs.is_open()) {
+        std::cerr << "Unable to open file .vms/HEAD" << std::endl;
+        // TODO: add exception handling code
+    }
+
+    std::string branch_name;
+    std::getline(head_ifs, branch_name);
+    head_ifs.close();
+
+    std::ostringstream branch_fpath;
+    branch_fpath << ".vms/branches/" << branch_name;
+
+    return branch_fpath.str();
+
 }

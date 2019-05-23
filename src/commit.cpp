@@ -5,25 +5,16 @@
 
 #include "commit.hpp"
 #include "archive.hpp"
+#include "access.hpp"
 
 /* Helper function for getting hash of parent commit when creating a new commit*/
 std::string get_parent_ref() {
-    std::ifstream head_ifs(".vms/HEAD");
-    if (!head_ifs.is_open()) {
-        std::cerr << "Unable to open file .vms/HEAD" << std::endl;
-        // TODO: add exception handling code
-    }
+    
+    std::string branch_fpath = get_branch_path();
 
-    std::string branch_name;
-    std::getline(head_ifs, branch_name);
-    head_ifs.close();
-
-    std::ostringstream branch_fpath;
-    branch_fpath << ".vms/branches/" << branch_name;
-
-    std::ifstream branch_ifs(branch_fpath.str());
+    std::ifstream branch_ifs(branch_fpath);
     if (!branch_ifs.is_open()) {
-        std::cerr << "Unable to open file " << branch_fpath.str() << std::endl;
+        std::cerr << "Unable to open file " << branch_fpath << std::endl;
         // TODO: add exception handling code
     }
 
