@@ -9,7 +9,7 @@
 
 /* Helper function for getting hash of parent commit when creating a new commit*/
 std::string get_parent_ref() {
-    
+
     std::string branch_fpath = get_branch_path();
 
     std::ifstream branch_ifs(branch_fpath);
@@ -62,6 +62,22 @@ std::string Commit::hash() {
     boost::compute::detail::sha1 hash(oss.str());
 
     return std::string(hash);
+}
+
+std::string Commit::log_string() {
+    std::ostringstream oss;
+    oss << "commit  " << hash() << std::endl;
+    oss << "Date    " << ctime(&datetime);
+    if (second_parent_ref != "") {
+        oss << "parents " << first_parent_ref << std::endl;
+        oss << "        " << second_parent_ref << std::endl;
+
+    } else {
+        oss << "parent  " << first_parent_ref << std::endl;
+    }
+    oss << "\n    " << message << std::endl;
+
+    return oss.str();
 }
 
 std::map<std::string, std::string>& Commit::get_map() {

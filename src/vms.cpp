@@ -136,7 +136,6 @@ int vms_unstage(char* filepath) {
 
 int vms_commit(char* msg) {
     // TODO: Fix and be more rigorous with error handling and propagation
-    // TODO: Add code to push formatted "commit string" onto log, meaning must add method to Commit class also to build string.
     // Load index
     map<string, string> index;  
     restore< map<string, string> >(index, ".vms/index");
@@ -190,6 +189,13 @@ int vms_commit(char* msg) {
     
     create_and_write_file(branch_fpath.c_str(), commit_hash.c_str(), 0644);
 
+    //Push formatted commit string to log and save
+    stack<string> log;
+    restore< stack<string> >(log, ".vms/log");
+
+    log.push(commit.log_string());
+    save< stack<string> >(log, ".vms/log");
+
     // Serialize and save your commit.
     ostringstream obj_path;
     obj_path << ".vms/objects/" << commit_hash;
@@ -205,6 +211,16 @@ int vms_commit(char* msg) {
 }
 
 int vms_log() {
+    // TODO: Add option to print log of only top n entries
+    // Load log
+    stack<string> log;
+    restore< stack<string> >(log, ".vms/log");
+    while (!log.empty()) {
+        cout << "===" << endl;
+        cout << log.top() << endl;
+        log.pop();
+    }
+
     return 0;
 }
 
