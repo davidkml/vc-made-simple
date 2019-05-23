@@ -16,6 +16,8 @@ bool is_valid_file(char* filepath);
 
 bool is_valid_dir(char* dirpath);
 
+std::string get_branch();
+
 std::string get_branch_path();
 
 std::string get_parent_ref();

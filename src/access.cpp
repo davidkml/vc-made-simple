@@ -85,16 +85,23 @@ bool is_valid_dir(char* dirpath) {
     return true;
 }
 
-std::string get_branch_path() {
+std::string get_branch() {
     std::ifstream head_ifs(".vms/HEAD");
     if (!head_ifs.is_open()) {
         std::cerr << "Unable to open file .vms/HEAD" << std::endl;
         // TODO: add exception handling code
     }
 
-    std::string branch_name;
-    std::getline(head_ifs, branch_name);
+    std::string current_branch;
+    std::getline(head_ifs, current_branch);
     head_ifs.close();
+
+    return current_branch;
+}
+
+std::string get_branch_path() {
+
+    std::string branch_name = get_branch();
 
     std::ostringstream branch_fpath;
     branch_fpath << ".vms/branches/" << branch_name;

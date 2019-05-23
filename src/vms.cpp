@@ -240,6 +240,36 @@ int vms_log() {
 }
 
 int vms_status() {
+    // List what branches currently exist and mark current branch
+    string current_branch = get_branch();
+
+    DIR *dirptr = opendir(".vms/branches");
+    struct dirent *entry = readdir(dirptr);
+
+    cout << "=== Branches ===" << endl;
+
+    while (entry != NULL) {
+        if (strcmp(".", entry->d_name) != 0 && strcmp("..", entry->d_name) != 0) {
+            if (strcmp(current_branch.c_str(), entry->d_name) == 0) {
+                cout << "*";
+            }
+
+            cout << entry->d_name << endl;
+
+        }
+        
+        entry = readdir(dirptr);
+
+    }
+
+    cout << endl;
+
+
+    // List all files currently staged. (for)
+    // List all files that have been staged and have been modified since staging (and the type of modification)
+    // list all tracked files that have not been staged and have been modified (and the type of modification)
+    // list all deleted files that used to be tracked
+    // list all untracked files in this directory
     // Load index
     map<string, string> index;  
     restore< map<string, string> >(index, ".vms/index");
