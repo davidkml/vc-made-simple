@@ -360,7 +360,7 @@ int vms_status() {
         if (is_valid_dir(root_entry->d_name) && strcmp(".", root_entry->d_name) != 0 && strcmp("..", root_entry->d_name)) {
             dirs.push_back(string(root_entry->d_name));
         }
-        if (is_valid_file(root_entry->d_name) && !is_tracked_file(root_entry->d_name)) {
+        if (is_valid_file(root_entry->d_name) && !is_tracked_file(root_entry->d_name) && !is_staged_file(root_entry->d_name)) {
             cout << root_entry->d_name << endl;
         }
         root_entry = readdir(root_dirptr);
