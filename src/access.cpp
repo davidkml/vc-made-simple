@@ -62,7 +62,7 @@ bool is_tracked_file(const char* filepath) {
 
 }
 
-bool is_modified_file(const char* filepath) {
+bool is_modified_tracked_file(const char* filepath) {
 
     if (filepath == NULL) {
         return false;

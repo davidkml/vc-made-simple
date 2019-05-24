@@ -12,7 +12,7 @@ bool is_staged_file(char* filepath);
 
 bool is_tracked_file(const char* filepath);
 
-bool is_modified_file(const char* filepath);
+bool is_modified_tracked_file(const char* filepath);
 
 bool is_valid_file(char* filepath);
 

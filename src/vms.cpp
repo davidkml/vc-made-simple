@@ -106,7 +106,7 @@ int vms_stage(char* filepath) {
         save< map<string, string> >(index, ".vms/index");
         return 0;
         
-    } else if (!is_modified_file(filepath)) {    // if file has not been modified since last commit, do not stage
+    } else if (!is_modified_tracked_file(filepath)) {    // if file has not been modified since last commit, do not stage
         cout << "No changes to be staged in file " << filepath << endl;
         return 0;
     }
@@ -274,7 +274,7 @@ int vms_status() {
     map<string,string>::iterator it;
     cout << "=== Staged Files ===" << endl;
 
-    for (it=index.begin(); it!=index.end(); ++it) {
+    for (it = index.begin(); it != index.end(); ++it) {
         // if new (not currently tracked)
         if (!is_tracked_file(it->first.c_str())) {
 
@@ -291,7 +291,6 @@ int vms_status() {
         // Note: the order of these checks is important
         
     }
-
 
     // List all files that have been staged and have been modified since staging (and the type of modification)
     // list all tracked files that have not been staged and have been modified (and the type of modification)
