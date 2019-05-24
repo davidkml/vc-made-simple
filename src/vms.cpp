@@ -5,6 +5,7 @@
 #include <map>
 #include <boost/serialization/map.hpp>
 
+#include <list>
 #include <stack>
 #include <boost/serialization/deque.hpp>
 #include <boost/serialization/stack.hpp>
@@ -249,22 +250,22 @@ int vms_status() {
     // List what branches currently exist and mark current branch
     string current_branch = get_branch();
 
-    DIR *dirptr = opendir(".vms/branches");
-    struct dirent *entry = readdir(dirptr);
+    DIR *branch_dirptr = opendir(".vms/branches");
+    struct dirent *branch_entry = readdir(branch_dirptr);
 
     cout << "=== Branches ===" << endl;
 
-    while (entry != NULL) {
-        if (strcmp(".", entry->d_name) != 0 && strcmp("..", entry->d_name) != 0) {
-            if (strcmp(current_branch.c_str(), entry->d_name) == 0) {
+    while (branch_entry != NULL) {
+        if (strcmp(".", branch_entry->d_name) != 0 && strcmp("..", branch_entry->d_name) != 0) {
+            if (strcmp(current_branch.c_str(), branch_entry->d_name) == 0) {
                 cout << "*";
             }
 
-            cout << entry->d_name << endl;
+            cout << branch_entry->d_name << endl;
 
         }
         
-        entry = readdir(dirptr);
+        branch_entry = readdir(branch_dirptr);
 
     }
 
@@ -344,16 +345,37 @@ int vms_status() {
         }
     }
 
-
+    cout << endl;
 
     // list all deleted files that used to be tracked
     // list all untracked files in this directory
+    list<string> dirs;
 
-    // std::map<std::string,std::string>::iterator it;
-    // std::cout << "Map contains:" << std::endl;
-    // for (it=index.begin(); it!=index.end(); ++it) {
-    //     std::cout << it->first << " => " << it->second << std::endl;
-    // }
+    DIR *root_dirptr = opendir(".");
+    struct dirent *root_entry = readdir(root_dirptr);
+
+    cout << "=== Untracked Files ===" << endl;
+
+    while (root_entry != NULL) {
+        if (is_valid_dir(root_entry->d_name) && strcmp(".", root_entry->d_name) != 0 && strcmp("..", root_entry->d_name)) {
+            dirs.push_back(string(root_entry->d_name));
+        }
+        if (is_valid_file(root_entry->d_name) && !is_tracked_file(root_entry->d_name)) {
+            cout << root_entry->d_name << endl;
+        }
+        root_entry = readdir(root_dirptr);
+
+    }
+
+    cout << endl;
+
+    cout << "=== Sub-directories ===" << endl;
+    list<string>::iterator dirs_iter;
+    for (dirs_iter = dirs.begin(); dirs_iter != dirs.end(); ++dirs_iter) {
+        cout << *dirs_iter << endl;
+    }
+
+    cout << endl;
 
     return 0;
 }
