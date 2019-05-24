@@ -86,12 +86,15 @@ bool is_modified_tracked_file(const char* filepath) {
         return true;    // Not being tracked, so by definition is modified relative to "tracked version"
     } 
 
-    // get its hash and compare it with hash of file of same name in working directory
-    ifstream file_ifs(filepath);
+    // get its hash and compare it with hash of file of same name in working directory. If it is not equal, then 
+    return !file_hash_equal_to_working_copy(string(filepath), it->second);
+}
+
+bool file_hash_equal_to_working_copy(const std::string& filename, const std::string& hash) {
+    ifstream file_ifs(filename);
     Blob file_contents(file_ifs);
 
-    return file_contents.hash() != it->second;
-
+    return file_contents.hash() == hash;
 }
 
 bool is_valid_file(char* filepath) {
