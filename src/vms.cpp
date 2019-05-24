@@ -106,9 +106,12 @@ int vms_stage(char* filepath) {
         save< map<string, string> >(index, ".vms/index");
         return 0;
         
-    } else if (!is_modified_tracked_file(filepath)) {    // if file has not been modified since last commit, do not stage
-        cout << "No changes to be staged in file " << filepath << endl;
+    } else if (is_staged_file(filepath) && !is_valid_file(filepath)) { // if file was previously staged but is now deleted
+        // Remove the file from index, save the updated index, and return
+        index.erase(string(filepath));
+        save< map<string, string> >(index, ".vms/index");
         return 0;
+
     }
 
 
@@ -284,16 +287,65 @@ int vms_status() {
 
             cout << "deleted:     " << it->first << endl;
 
-        } else { // if modified
+        } else if (is_modified_tracked_file(it->first.c_str())) { // if modified
             cout << "modified:    " << it->first << endl;
         } 
 
         // Note: the order of these checks is important
         
     }
+    cout << endl;
+
+
 
     // List all files that have been staged and have been modified since staging (and the type of modification)
+    cout << "=== Unstaged Changes ===" << endl;
+
+    // TODO: Improve performance of this loop.
+    // TODO: Complicated logic to achieve desired behavior: simplify control logic if you can, to make things more clear.
+    for (it = index.begin(); it != index.end(); ++it) {
+
+        if (it->second != DELETED_FILE) {
+            if (!is_valid_file(it->first.c_str())) {    // if previously staged file has been deleted, list it as deleted
+                cout << "deleted:     " << it->first << endl;
+            } else if (!file_hash_equal_to_working_copy(it->first, it->second)) {    // if tracked file has been modified, list it as modified
+                cout << "modified:    " << it->first << endl;
+            }
+
+        } else { // File staged as deleted
+            if (is_valid_file(it->first.c_str())) { // if file is no longer deleted and can be staged to be added again, should notify user.. by definition, it is already tracked, so maybe check if it has changes. If so, then list it as modified... if it doesn't... then problem because can't stage if no changes to stage. Easy way around it is to remove the check before staging, but bad for performance because need to do check in status loop. But this loop is fairly small, supposedly. Okay.
+                    cout << "modified:    " << it->first << endl;
+            }
+        }
+    }
     // list all tracked files that have not been staged and have been modified (and the type of modification)
+    // Load parent commit
+    Commit parent_commit;
+    string parent_hash = get_parent_ref();
+    ostringstream parent_fpath;
+    parent_fpath << ".vms/objects/" << parent_hash;
+
+    restore<Commit>(parent_commit, parent_fpath.str());
+
+    // Get reference to map of parent commit
+    map<string, string>& parent_map_ref = parent_commit.get_map();
+
+    for (it = parent_map_ref.begin(); it != parent_map_ref.end(); ++it) {
+        if (!is_staged_file(it->first.c_str())) {
+            if (!is_valid_file(it->first.c_str())) { // unstaged tracked file has been deleted from working directory
+
+                cout << "deleted:     " << it->first << endl;
+            
+            } else if (is_modified_tracked_file(it->first.c_str())) {
+            
+                cout << "modified:    " << it->first << endl;
+            
+            }
+        }
+    }
+
+
+
     // list all deleted files that used to be tracked
     // list all untracked files in this directory
 

@@ -26,7 +26,7 @@ bool is_initialized() {
     return true;
 }
 
-bool is_staged_file(char* filepath) {
+bool is_staged_file(const char* filepath) {
     if (filepath == NULL) {
         return false;
     }
@@ -97,7 +97,7 @@ bool file_hash_equal_to_working_copy(const std::string& filename, const std::str
     return file_contents.hash() == hash;
 }
 
-bool is_valid_file(char* filepath) {
+bool is_valid_file(const char* filepath) {
     if (filepath == NULL) {
         return false;
     }
