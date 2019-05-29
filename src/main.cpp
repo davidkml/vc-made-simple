@@ -5,6 +5,7 @@
 #include "access.hpp"
 #include "archive.hpp"
 #include "vms.hpp"
+#include "utils.h"
 
 using namespace std;
 
@@ -47,41 +48,70 @@ int main(int argc, char* argv[]) {
                 // TODO: add help text
                 return -1;
             }
+            
+            char norm_filepath[PATH_MAX];
 
             if (strcmp(argv[1], "stage") == 0) {
                 for (int i = 2; i < argc; i++) {
                     //TODO: Implement logic for stage
                     //TODO: Clean up and refactor code for staging of directories
-                    if (is_valid_dir(argv[i])) {
-                        if (has_trailing_slash(argv[i])) {
-                            remove_trailing_slash(argv[i]);
+
+                    if (is_valid_file(argv[i])) {
+                        // if argv[i] is a valid file, then normalize it
+                        if (normalize_relative_filepath(argv[i], norm_filepath) != 0) { // Error, most likely given file not in cwd or its subdirectories 
+                            cout << argv[i] << " not staged" << endl;
+                            continue;
+                        }
+                    } else {
+                        // if argv[i] is an invalid file or it is a directory, then copy it into normalized and do nothing
+                        strcpy(norm_filepath, argv[i]);
+                    }
+
+                    if (is_valid_dir(norm_filepath)) {
+                        if (has_trailing_slash(norm_filepath)) {
+                            remove_trailing_slash(norm_filepath);
                         }
 
-                        DIR *dirptr = opendir(argv[i]);
+                        DIR *dirptr = opendir(norm_filepath);
                         struct dirent *entry = readdir(dirptr);
 
                         while (entry != NULL) {
 
-                            char dir_filename[BUFSIZ];
-                            sprintf(dir_filename, "%s/%s", argv[i], entry->d_name);
+                            char dir_filename[PATH_MAX];
+                            char norm_dir_filename[PATH_MAX];
+                            sprintf(dir_filename, "%s/%s", norm_filepath, entry->d_name);
 
-                            if (is_valid_file(dir_filename) || is_tracked_file(dir_filename) || is_staged_file(dir_filename)) {
+                            // Only apply normalization to files that actually exist in file system.
+                            // This means can still stage files that don't exist (e.g. deleted files)
+                            if (is_valid_file(dir_filename)) {
+                                if (normalize_relative_filepath(dir_filename, norm_dir_filename) != 0) { // Error, most likely given file not in cwd or its subdirectories 
+                                cout << dir_filename << " not staged" << endl;
+                                entry = readdir(dirptr);
+                                continue;
+                                }
+                            } else {
+                                // file does not exist, so copy dir_filename into norm_dir_filename instead
+                                strcpy(norm_dir_filename, dir_filename);
+                            }
 
-                                cout << "Staging file " << dir_filename << endl;
-                                vms_stage(dir_filename);
+                            if (is_valid_file(norm_dir_filename) || is_tracked_file(norm_dir_filename) || is_staged_file(norm_dir_filename)) {
+
+                                cout << "Staging file " << norm_dir_filename << endl;
+                                vms_stage(norm_dir_filename);
 
                             }
 
                             entry = readdir(dirptr);
 
                         }
-                    }else if (is_valid_file(argv[i]) || is_tracked_file(argv[i]) || is_staged_file(argv[i])) {
-                        
-                        cout << "Staging file " << argv[i] << endl;
-                        vms_stage(argv[i]);
+                        // need to normalize before check. How would you do this? The issue is deleted files.
+                    }else if (is_valid_file(norm_filepath) || is_tracked_file(norm_filepath) || is_staged_file(norm_filepath)) {
+
+                        cout << "Staging file " << norm_filepath << endl;
+                        vms_stage(norm_filepath);
 
                     } else {
-                        cerr << argv[i] << " is not a valid or currently tracked file or directory." << endl;
+                        cerr << norm_filepath << " is not a valid or currently tracked file or directory." << endl;
                     }
                 }
 
@@ -90,23 +120,49 @@ int main(int argc, char* argv[]) {
             } else { // argv[1] == unstage 
                 for (int i = 2; i < argc; i++) {
                     //TODO: Implement logic for unstage
-                    if (is_valid_dir(argv[i])) {
-                        if (has_trailing_slash(argv[i])) {
-                            remove_trailing_slash(argv[i]);
+
+                    if (is_valid_file(argv[i])) {
+                        // if argv[i] is a valid file, then normalize it
+                        if (normalize_relative_filepath(argv[i], norm_filepath) != 0) { // Error, most likely given file not in cwd or its subdirectories 
+                            cout << argv[i] << " not staged" << endl;
+                            continue;
+                        }
+                    } else {
+                        // if argv[i] is an invalid file or it is a directory, then copy it into normalized and do nothing
+                        strcpy(norm_filepath, argv[i]);
+                    }
+
+
+                    if (is_valid_dir(norm_filepath)) {
+                        if (has_trailing_slash(norm_filepath)) {
+                            remove_trailing_slash(norm_filepath);
                         }
 
-                        DIR *dirptr = opendir(argv[i]);
+                        DIR *dirptr = opendir(norm_filepath);
                         struct dirent *entry = readdir(dirptr);
 
                         while (entry != NULL) {
 
                             char dir_filename[BUFSIZ];
-                            sprintf(dir_filename, "%s/%s", argv[i], entry->d_name);
+                            char norm_dir_filename[PATH_MAX];
+                            sprintf(dir_filename, "%s/%s", norm_filepath, entry->d_name);
 
-                            if (is_staged_file(dir_filename)) {
+                            // Normalize file if it is valid, otherwise 
+                            if (is_valid_file(dir_filename)) {
+                                if (normalize_relative_filepath(dir_filename, norm_dir_filename) != 0) { // Error, most likely given file not in cwd or its subdirectories 
+                                cout << dir_filename << " not staged" << endl;
+                                entry = readdir(dirptr);
+                                continue;
+                                }
+                            } else {
+                                // file does not exist, so copy dir_filename into norm_dir_filename instead
+                                strcpy(norm_dir_filename, dir_filename);
+                            }
 
-                                cout << "Unstaging file " << dir_filename << endl;
-                                vms_unstage(dir_filename);
+                            if (is_staged_file(norm_dir_filename)) {
+
+                                cout << "Unstaging file " << norm_dir_filename << endl;
+                                vms_unstage(norm_dir_filename);
 
                             }
 
@@ -114,11 +170,12 @@ int main(int argc, char* argv[]) {
 
                         }
 
-                    } else if (is_staged_file(argv[i])) {
-                        cout << "Unstaging file " << argv[i] << endl;
-                        vms_unstage(argv[i]);
+                    } else if (is_staged_file(norm_filepath)) {
+
+                        cout << "Unstaging file " << norm_filepath << endl;
+                        vms_unstage(norm_filepath);
                     } else {
-                        cout << "ERROR No file named " << argv[i] << "currently being tracked" << endl;
+                        cout << "ERROR No file named " << norm_filepath << "currently being tracked" << endl;
                     }
                 }
                 return 0;
