@@ -5,6 +5,7 @@
 #include <map>
 #include <boost/serialization/map.hpp>
 
+#include <set>
 #include <list>
 #include <stack>
 #include <boost/serialization/deque.hpp>
@@ -168,6 +169,9 @@ int vms_commit(char* msg) {
     cout << "commit before adding new elements" << endl;
     commit.print();
 
+    set<string> uuid_set;     // Create set to track which uuids have been seen before so don't try to move twice
+    pair<set<string>::iterator,bool> insert_ret;
+
     map<string,string>::iterator it;
     for (it=index.begin(); it!=index.end(); ++it) {
         // if staged is file mapped to DELETED_FILE string, remove it from commit tree
@@ -175,7 +179,10 @@ int vms_commit(char* msg) {
             commit.remove_from_map(it->first);
         } else { // puts entry to commit map and move files from cache to objects directory
             commit.put_to_map(it->first, it->second);
-            move_from_cache_to_objects(it->second);
+            insert_ret = uuid_set.insert(it->second);
+            if (insert_ret.second) { // if insert succeed, then uuid has not been seen yet and can be moved.
+                move_from_cache_to_objects(it->second);
+            }
         }
     }
     cout << "commit after adding new elements" << endl;
