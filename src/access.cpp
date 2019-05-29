@@ -109,7 +109,7 @@ bool is_valid_file(const char* filepath) {
     return true;
 }
 
-bool is_valid_dir(char* dirpath) {
+bool is_valid_dir(const char* dirpath) {
     if (dirpath == NULL) {
         return false;
     }

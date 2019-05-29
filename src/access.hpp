@@ -18,7 +18,7 @@ bool file_hash_equal_to_working_copy(const std::string& filename, const std::str
 
 bool is_valid_file(const char* filepath);
 
-bool is_valid_dir(char* dirpath);
+bool is_valid_dir(const char* dirpath);
 
 std::string get_branch();
 

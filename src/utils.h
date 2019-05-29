@@ -39,4 +39,6 @@ int remove_file(const char* filepath);
 */
 int move_file(const char* src, const char* dst);
 
+int normalize_relative_filepath(const char* filepath, char* buf);
+
 #endif // UTILS_H

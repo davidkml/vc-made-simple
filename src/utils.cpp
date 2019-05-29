@@ -3,7 +3,11 @@
 #include <sys/types.h> // for mkdir, creat
 #include <sys/stat.h> // for creat
 #include <fcntl.h> // for creat
-#include <unistd.h> // for write
+#include <unistd.h> // for write, getcwd
+
+#include <limits.h> // for realpath
+#include <stdlib.h> // for realpath
+
 
 #include "utils.h"
 
@@ -123,4 +127,31 @@ int move_file(const char* src, const char* dst) {
 
     return 0;
 
+}
+
+int normalize_relative_filepath(const char* filepath, char* buf) {
+    char abs_filepath[PATH_MAX];
+    if (realpath(filepath, abs_filepath) == NULL) {
+        cerr << "ERROR: Unable to obtain absolute filepath of file " << filepath << ". " << strerror(errno) << endl;
+        return -1;
+    }
+
+    char cwd[PATH_MAX];
+    if (getcwd(cwd, PATH_MAX) == NULL) {
+        cerr << "ERROR: Unable to obtain current working directory. " << strerror(errno) << endl;
+        return -1;
+    }
+
+    int cwd_len = strlen(cwd);
+    
+    if (strncmp(cwd, abs_filepath, cwd_len) != 0) {
+        cerr << "ERROR: Given file " << filepath << " is not in current working directory or its subdirectories." << endl;
+        return -1;
+    }
+
+    char * rel_filepath = abs_filepath + 1 + cwd_len;
+
+    strcpy(buf, rel_filepath);
+    
+    return 0;
 }
