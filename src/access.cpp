@@ -48,13 +48,16 @@ bool is_tracked_file(const char* filepath) {
     }
 
     // Load parent commit. 
-    string parent_hash = get_parent_ref();
-    
-    ostringstream parent_fpath;
-    parent_fpath << ".vms/objects/" << parent_hash;
-
-
     Commit parent_commit;
+    string parent_hash = get_parent_ref();
+    ostringstream parent_fpath;
+
+    string parent_hash_prefix;
+    string parent_hash_suffix;
+    split_prefix_suffix(parent_hash, parent_hash_prefix, parent_hash_suffix, 2);
+
+    parent_fpath << ".vms/objects/" << parent_hash_prefix << "/" << parent_hash_suffix;
+
     restore<Commit>(parent_commit, parent_fpath.str());
 
     // Check if file found in parent commit
@@ -72,7 +75,12 @@ bool is_modified_tracked_file(const char* filepath) {
     Commit parent_commit;
     string parent_hash = get_parent_ref();
     ostringstream parent_fpath;
-    parent_fpath << ".vms/objects/" << parent_hash;
+
+    string parent_hash_prefix;
+    string parent_hash_suffix;
+    split_prefix_suffix(parent_hash, parent_hash_prefix, parent_hash_suffix, 2);
+
+    parent_fpath << ".vms/objects/" << parent_hash_prefix << "/" << parent_hash_suffix;
 
     restore<Commit>(parent_commit, parent_fpath.str());
 
@@ -161,4 +169,13 @@ std::string get_parent_ref() {
     branch_ifs.close();
 
     return parent_commit_hash;
+}
+
+int split_prefix_suffix(const std::string& str, std::string& prefix, std::string& suffix, int n) {
+    if (n > str.length() - 1) {
+        return -1;
+    }
+    prefix = str.substr(0, n);
+    suffix = str.substr(n);
+    return 0;
 }

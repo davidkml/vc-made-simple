@@ -30,16 +30,24 @@ int move_from_cache_to_objects(const string& hash) {
     ostringstream cache_path;
     cache_path << ".vms/cache/" << hash;
 
+    // Create subdirectory if it does not already exist and move
     ostringstream objects_path;
-    objects_path << ".vms/objects/" << hash;
+
+    string hash_prefix;
+    string hash_suffix;
+    split_prefix_suffix(hash, hash_prefix, hash_suffix, 2);
+
+    objects_path << ".vms/objects/" << hash_prefix;
+    make_dir(objects_path.str().c_str()); // May need some error handling code
     
+    objects_path << "/" << hash_suffix;
     int ret = move_file(cache_path.str().c_str(), objects_path.str().c_str());
 
     if (ret != 0) {
         cerr << "ERROR: Unable to move staged changes from cache to objects directory" << endl;
         return -1;
     }
-        // Change permissions of generated file.
+    // Change permissions of generated file.
     ret = chmod(objects_path.str().c_str(), 0444);
     if (ret != 0) {
         cerr << "Failed to change permissions of file." << objects_path.str() << endl;
@@ -87,7 +95,15 @@ int vms_init() {
     create_and_write_file(".vms/branches/master", sentinal_hash.c_str(), 0644);
 
     ostringstream obj_path;
-    obj_path << ".vms/objects/" << sentinal_hash;
+
+    string sentinal_hash_prefix;
+    string sentinal_hash_suffix;
+    split_prefix_suffix(sentinal_hash, sentinal_hash_prefix, sentinal_hash_suffix, 2);
+
+    obj_path << ".vms/objects/" << sentinal_hash_prefix;
+    make_dir(obj_path.str().c_str());
+    obj_path << "/" << sentinal_hash_suffix;
+
     save<Commit>(sentinal, obj_path.str());
 
     return 0;
@@ -227,7 +243,15 @@ int vms_commit(char* msg) {
 
     // Serialize and save your commit.
     ostringstream obj_path;
-    obj_path << ".vms/objects/" << commit_hash;
+
+    string commit_hash_prefix;
+    string commit_hash_suffix;
+    split_prefix_suffix(commit_hash, commit_hash_prefix, commit_hash_suffix, 2);
+
+    obj_path << ".vms/objects/" << commit_hash_prefix;
+    make_dir(obj_path.str().c_str());
+    obj_path << "/" << commit_hash_suffix;
+
     save<Commit>(commit, obj_path.str());
 
     // Change permissions of generated file.
@@ -331,7 +355,12 @@ int vms_status() {
     Commit parent_commit;
     string parent_hash = get_parent_ref();
     ostringstream parent_fpath;
-    parent_fpath << ".vms/objects/" << parent_hash;
+
+    string parent_hash_prefix;
+    string parent_hash_suffix;
+    split_prefix_suffix(parent_hash, parent_hash_prefix, parent_hash_suffix, 2);
+
+    parent_fpath << ".vms/objects/" << parent_hash_prefix << "/" << parent_hash_suffix;
 
     restore<Commit>(parent_commit, parent_fpath.str());
 

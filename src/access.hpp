@@ -26,6 +26,7 @@ std::string get_branch_path();
 
 std::string get_parent_ref();
 
+int split_prefix_suffix(const std::string& str, std::string& prefix, std::string& suffix, int n);
 
 
 #endif // ACCESS_HPP

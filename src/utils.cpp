@@ -35,7 +35,7 @@ int make_dir(const char* dirpath) {
     int ret = mkdir(dirpath, 0755);
 
     if (ret == -1) {
-        cerr << "ERROR: Unable to create directory. " << strerror(errno) << endl;
+        // cerr << "ERROR: Unable to create directory. " << strerror(errno) << endl;
         return -1;   
     }
 

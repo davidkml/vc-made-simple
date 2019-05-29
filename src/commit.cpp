@@ -15,16 +15,21 @@ Commit::Commit() {
 }
 
 Commit::Commit(const std::string& msg) {
-    Commit parent_temp;
+    // Load parent commit
+    Commit parent_commit;
     std::string parent_hash = get_parent_ref();
-
     std::ostringstream parent_fpath;
-    parent_fpath << ".vms/objects/" << parent_hash;
 
-    restore<Commit>(parent_temp, parent_fpath.str());
+    std::string parent_hash_prefix;
+    std::string parent_hash_suffix;
+    split_prefix_suffix(parent_hash, parent_hash_prefix, parent_hash_suffix, 2);
+
+    parent_fpath << ".vms/objects/" << parent_hash_prefix << "/" << parent_hash_suffix;
+
+    restore<Commit>(parent_commit, parent_fpath.str());
     
     // get reference to parent's file_to_hash map
-    std::map<std::string, std::string>& parent_map = parent_temp.get_map();
+    std::map<std::string, std::string>& parent_map = parent_commit.get_map();
 
     // invoke copy constructor on parent's map to current obj 
     file_to_hash = parent_map; 
