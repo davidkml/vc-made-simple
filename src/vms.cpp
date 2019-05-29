@@ -35,7 +35,7 @@ int move_from_cache_to_objects(const string& hash) {
 
     string hash_prefix;
     string hash_suffix;
-    split_prefix_suffix(hash, hash_prefix, hash_suffix, 2);
+    split_prefix_suffix(hash, hash_prefix, hash_suffix, PREFIX_LENGTH);
 
     objects_path << ".vms/objects/" << hash_prefix;
     make_dir(objects_path.str().c_str()); // May need some error handling code
@@ -98,7 +98,7 @@ int vms_init() {
 
     string sentinal_hash_prefix;
     string sentinal_hash_suffix;
-    split_prefix_suffix(sentinal_hash, sentinal_hash_prefix, sentinal_hash_suffix, 2);
+    split_prefix_suffix(sentinal_hash, sentinal_hash_prefix, sentinal_hash_suffix, PREFIX_LENGTH);
 
     obj_path << ".vms/objects/" << sentinal_hash_prefix;
     make_dir(obj_path.str().c_str());
@@ -246,7 +246,7 @@ int vms_commit(char* msg) {
 
     string commit_hash_prefix;
     string commit_hash_suffix;
-    split_prefix_suffix(commit_hash, commit_hash_prefix, commit_hash_suffix, 2);
+    split_prefix_suffix(commit_hash, commit_hash_prefix, commit_hash_suffix, PREFIX_LENGTH);
 
     obj_path << ".vms/objects/" << commit_hash_prefix;
     make_dir(obj_path.str().c_str());
@@ -358,7 +358,7 @@ int vms_status() {
 
     string parent_hash_prefix;
     string parent_hash_suffix;
-    split_prefix_suffix(parent_hash, parent_hash_prefix, parent_hash_suffix, 2);
+    split_prefix_suffix(parent_hash, parent_hash_prefix, parent_hash_suffix, PREFIX_LENGTH);
 
     parent_fpath << ".vms/objects/" << parent_hash_prefix << "/" << parent_hash_suffix;
 

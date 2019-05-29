@@ -22,7 +22,7 @@ Commit::Commit(const std::string& msg) {
 
     std::string parent_hash_prefix;
     std::string parent_hash_suffix;
-    split_prefix_suffix(parent_hash, parent_hash_prefix, parent_hash_suffix, 2);
+    split_prefix_suffix(parent_hash, parent_hash_prefix, parent_hash_suffix, PREFIX_LENGTH);
 
     parent_fpath << ".vms/objects/" << parent_hash_prefix << "/" << parent_hash_suffix;
 

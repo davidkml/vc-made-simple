@@ -54,7 +54,7 @@ bool is_tracked_file(const char* filepath) {
 
     string parent_hash_prefix;
     string parent_hash_suffix;
-    split_prefix_suffix(parent_hash, parent_hash_prefix, parent_hash_suffix, 2);
+    split_prefix_suffix(parent_hash, parent_hash_prefix, parent_hash_suffix, PREFIX_LENGTH);
 
     parent_fpath << ".vms/objects/" << parent_hash_prefix << "/" << parent_hash_suffix;
 
@@ -78,7 +78,7 @@ bool is_modified_tracked_file(const char* filepath) {
 
     string parent_hash_prefix;
     string parent_hash_suffix;
-    split_prefix_suffix(parent_hash, parent_hash_prefix, parent_hash_suffix, 2);
+    split_prefix_suffix(parent_hash, parent_hash_prefix, parent_hash_suffix, PREFIX_LENGTH);
 
     parent_fpath << ".vms/objects/" << parent_hash_prefix << "/" << parent_hash_suffix;
 

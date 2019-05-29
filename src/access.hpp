@@ -28,5 +28,6 @@ std::string get_parent_ref();
 
 int split_prefix_suffix(const std::string& str, std::string& prefix, std::string& suffix, int n);
 
+const int PREFIX_LENGTH = 2;
 
 #endif // ACCESS_HPP
