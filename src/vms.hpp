@@ -3,11 +3,11 @@
 
 int vms_init();
 
-int vms_stage(char* filepath);
+int vms_stage(const char* filepath);
 
-int vms_unstage(char* filepath);
+int vms_unstage(const char* filepath);
 
-int vms_commit(char* msg);
+int vms_commit(const char* msg);
 
 int vms_log();
 

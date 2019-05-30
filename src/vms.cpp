@@ -109,7 +109,7 @@ int vms_init() {
     return 0;
 }
 
-int vms_stage(char* filepath) {
+int vms_stage(const char* filepath) {
     // TODO: add support for staging change to deleted file 
     // (e.g. if previously tracked file but file now is deleted)
 
@@ -154,7 +154,7 @@ int vms_stage(char* filepath) {
     return 0;
 }
 
-int vms_unstage(char* filepath) {
+int vms_unstage(const char* filepath) {
     // Load index
     map<string, string> index;  
     restore< map<string, string> >(index, ".vms/index");
@@ -168,7 +168,7 @@ int vms_unstage(char* filepath) {
     return 0;
 }
 
-int vms_commit(char* msg) {
+int vms_commit(const char* msg) {
     // TODO: Fix and be more rigorous with error handling and propagation
     // Load index
     map<string, string> index;  
