@@ -272,7 +272,18 @@ int main(int argc, char* argv[]) {
             return 0;
 
         } else if (strcmp(argv[1], "info") == 0) {
+            if (argc < 3) {
+                cerr << "ERROR: Must provide name of commit to look up" << endl;
+                return -1;
+            }
 
+            if (!is_valid_commit_id(argv[2])) {
+                cout << "ERROR: Ambiguous or no matching commit id provided" << endl;
+                return -1;
+            }
+
+            cout << "Printing info for commit " << argv[2] << endl;
+            return 0;
         }
         // More commands on the way
     }
