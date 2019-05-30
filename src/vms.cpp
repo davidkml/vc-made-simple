@@ -418,6 +418,7 @@ int vms_status() {
 
 
 int vms_mkbranch(const char* branchname) {
+    // Copy branch currently pointed to by HEAD as new branch
     string src_path = get_branch_path();
     ostringstream dst_path;
     dst_path << ".vms/branches/" << branchname;
@@ -426,9 +427,49 @@ int vms_mkbranch(const char* branchname) {
     ofstream dst(dst_path.str());
 
     dst << src.rdbuf();
+    
+    src.close();
+    dst.close();
+
     return 0;
 }
 
 int vms_mkbranch(const char* branchname, const char* commit_id) {
+    ostringstream dst_path;
+    dst_path << ".vms/branches/" << branchname;
+
+
+    // get the full commit_id and write it to dst
+    std::string id_prefix;
+    std::string id_suffix;
+    split_prefix_suffix(std::string(commit_id), id_prefix, id_suffix, PREFIX_LENGTH);
+    
+    ostringstream full_id;
+    full_id << id_prefix;
+
+    ostringstream commit_subdir;
+    commit_subdir << ".vms/objects/" << id_prefix;
+
+    const char* obj_subdir = commit_subdir.str().c_str();
+
+    if (is_valid_dir(obj_subdir)) {
+    
+        DIR *dirptr = opendir(obj_subdir);
+        struct dirent *entry = readdir(dirptr);
+
+        while (entry != NULL) {
+            if (strcmp(".", entry->d_name) != 0 && strcmp("..", entry->d_name) != 0) {
+                if (strncmp(id_suffix.c_str(), entry->d_name, id_suffix.length()) == 0) {
+
+                    full_id << entry->d_name;
+
+                }
+            }
+            entry = readdir(dirptr);
+        }
+    }
+    
+    create_and_write_file(dst_path.str().c_str(), full_id.str().c_str(), 0644);
+
     return 0;
 }

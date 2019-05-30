@@ -269,6 +269,7 @@ int main(int argc, char* argv[]) {
                     return -1;
                 }
                 cout << "Creating branch " << argv[2] << " at commit " << argv[3] << endl;
+                return vms_mkbranch(argv[2], argv[3]);
             }
 
             return 0;
