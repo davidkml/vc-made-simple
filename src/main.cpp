@@ -239,6 +239,7 @@ int main(int argc, char* argv[]) {
                     cout << "Checking out all files from commit " << argv[3] << endl;
                 } else { // files given
                     cout << "Checking out files" << endl;
+                    return vms_checkout_files(argv[3], argc, argv);
                 }
 
                 return 0;

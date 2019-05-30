@@ -91,6 +91,37 @@ int restore_commit_from_shortened_id(const char* commit_id, Commit& commit) {
     return 0;
 }
 
+int restore_blob_from_id(const string& blob_id, Blob& blob) {
+    string blob_id_prefix;
+    string blob_id_suffix;
+    split_prefix_suffix(blob_id, blob_id_prefix, blob_id_suffix, PREFIX_LENGTH);
+
+    ostringstream blob_path;
+    blob_path << ".vms/objects/" << blob_id_prefix << "/" << blob_id_suffix;
+
+    restore(blob, blob_path.str());
+
+    return 0;
+}
+
+/** Finds the position of the last trailing slash of the filepath and returns its index. 
+ * If no slash is found in the filepath, then the function returns -1.
+ * Examples: 
+ * Input: .vms/objects/de/<file> 
+ * Output: 15
+ * 
+ * Input: foo
+ * Output: -1 **/
+int find_end_slash(string filepath) {
+    int pos = 0;
+    size_t ret = 0;
+    while(ret != string::npos) {
+        pos = ret;
+        ret = filepath.find("/", pos+1);
+    }
+    return pos;
+}
+
 
 int vms_init() {
 
@@ -554,5 +585,75 @@ int vms_info(const char* commit_id, const char* filename) {
     cout << file.get_content() << endl;
 
     return 0;
+
+}
+
+int vms_checkout_files(const char* commit_id, const int argc, char* const argv[]) {
+    Commit commit;
+    restore_commit_from_shortened_id(commit_id, commit);
+
+    // Validate all files to find ones that exist
+    map<string, string>::iterator m_elem;
+    list<string> found_files;
+    for (int i = 4; i < argc; i++) {
+        if (commit.find_in_map(string(argv[i]), m_elem)) {
+            found_files.push_back(m_elem->first);
+        }
+    }
+
+    if (found_files.empty()) {
+        cout << "No files match those provided. Exiting..." << endl;
+        return -1;
+    }
+
+    // Ask user to verify that they want to checkout these files.
+    list<string>::iterator l_elem;
+    cout << commit.log_string() << endl;
+    cout << "Checking out files" << endl;
+    for (l_elem = found_files.begin(); l_elem != found_files.end(); l_elem++) {
+        cout << "    " << *l_elem << endl;
+    }
+    cout << endl;
+
+    string input;
+    cout << "Warning: checking out files may overwrite uncommitted changes for these files in the working directory." << endl;
+    cout << "Confirm checkout (y/n):";
+    getline(cin, input);
+
+    while (input != "y" && input != "n") {
+        cout << "Please enter y or n:";
+        getline(cin, input);
+    }
+
+    if (input == "n") {
+        return 0;
+    }
+
+    // User answered "y", so checkout files.
+
+    int es_pos;
+    for (l_elem = found_files.begin(); l_elem != found_files.end(); l_elem++) {
+        
+        commit.find_in_map(*l_elem, m_elem);
+        es_pos = find_end_slash(m_elem->first);
+
+        if (es_pos != 0) { // file is located inside some directory(s) so must check that the directories exist
+
+            string dirpath = m_elem->first.substr(0, es_pos+1);
+            if (!is_valid_dir(dirpath.c_str())) {
+                cout << "Skipping checkout of " << m_elem->first << ". Directories do not exist. Create directory path " << dirpath << " and try again." << endl;
+                continue;
+            } // otherwise, copy as normal
+        }
+        Blob file;
+        restore_blob_from_id(m_elem->second, file);
+
+        ofstream ofs(m_elem->first);
+        ofs << file.get_content();
+        ofs.close();
+    }
+
+    return 0;
+
 
 }
