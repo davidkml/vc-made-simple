@@ -259,7 +259,7 @@ int main(int argc, char* argv[]) {
                 return 0;
             }
 
-            else if (argc == 3) { // no commit_id provided, so make branch at current commit
+            if (argc == 3) { // no commit_id provided, so make branch at current commit
                 cout << "Creating branch " << argv[2] << " at current location " << endl;
                 return vms_mkbranch(argv[2]);
 
@@ -290,8 +290,13 @@ int main(int argc, char* argv[]) {
                 return 0;
             }
 
+            if (strcmp(argv[2], get_branch().c_str()) == 0) {
+                cout << "Currently on branch " << argv[2] << ". Move to another branch and try again" << endl;
+                return 0;
+            }
+
             cout << "Removing branch " << argv[2] << endl;
-            return 0;
+            return vms_rmbranch(argv[2]);
 
         } else if (strcmp(argv[1], "info") == 0) {
             if (argc < 3) {

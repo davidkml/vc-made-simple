@@ -473,3 +473,11 @@ int vms_mkbranch(const char* branchname, const char* commit_id) {
 
     return 0;
 }
+
+int vms_rmbranch(const char* branchname) {
+    ostringstream branch_path;
+    branch_path << ".vms/branches/" << branchname;
+
+    remove_file(branch_path.str().c_str());
+    return 0;
+}

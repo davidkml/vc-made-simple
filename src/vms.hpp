@@ -17,4 +17,6 @@ int vms_mkbranch(const char* branchname);
 
 int vms_mkbranch(const char* branchname, const char* commit_id);
 
+int vms_rmbranch(const char* branchname);
+
 #endif // VMS_HPP
