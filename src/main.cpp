@@ -310,7 +310,7 @@ int main(int argc, char* argv[]) {
             }
 
             cout << "Printing info for commit " << argv[2] << endl;
-            return 0;
+            return vms_info(argv[2]);
         }
         // More commands on the way
     }

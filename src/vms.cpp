@@ -481,3 +481,41 @@ int vms_rmbranch(const char* branchname) {
     remove_file(branch_path.str().c_str());
     return 0;
 }
+
+int vms_info(const char* commit_id) {
+    string id_prefix;
+    string id_suffix;
+    split_prefix_suffix(string(commit_id), id_prefix, id_suffix, PREFIX_LENGTH);
+    
+    ostringstream obj_path;
+    obj_path << ".vms/objects/" << id_prefix;
+
+    const char* obj_subdir = obj_path.str().c_str();
+
+    if (is_valid_dir(obj_subdir)) {
+    
+        DIR *dirptr = opendir(obj_subdir);
+        struct dirent *entry = readdir(dirptr);
+
+        while (entry != NULL) {
+            if (strcmp(".", entry->d_name) != 0 && strcmp("..", entry->d_name) != 0) {
+                if (strncmp(id_suffix.c_str(), entry->d_name, id_suffix.length()) == 0) {
+
+                    obj_path << "/" << entry->d_name;
+
+                }
+            }
+            entry = readdir(dirptr);
+        }
+    }
+
+    Commit commit;
+    restore(commit, obj_path.str());
+
+    cout << commit.log_string() << endl;
+    commit.print_tracked_files();
+
+    return 0;
+    
+
+}

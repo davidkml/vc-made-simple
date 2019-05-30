@@ -18,6 +18,7 @@ class Commit {
         Commit(const std::string& msg);
         std::string hash();
         std::string log_string();
+        void print_tracked_files();
         void print(); // delete after testing
         std::map<std::string, std::string>& get_map();
         void put_to_map(const std::string& key, const std::string& value);

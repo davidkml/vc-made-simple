@@ -109,3 +109,13 @@ void Commit::print() {
         std::cout << it->first << " => " << it->second << std::endl;
     }
 }
+
+void Commit::print_tracked_files() {
+    std::map<std::string,std::string>::iterator it;
+    std::cout << "Files tracked in this commit\n" << std::endl;
+    for (it=file_to_hash.begin(); it!=file_to_hash.end(); ++it) {
+        std::cout << "    " << it->first << std::endl;
+    }
+
+    std::cout << std::endl;
+}
