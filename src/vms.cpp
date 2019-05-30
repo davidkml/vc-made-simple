@@ -56,6 +56,41 @@ int move_from_cache_to_objects(const string& hash) {
     return 0;
 }
 
+/** Helper method for restoring a commit from a shortened commit id
+ * Utilization assumes prior validation that shortened id is valid, meaning:
+ * - it is longer than the defined PREFIX_LENGTH
+ * - its prefix matches a subdirectory in the .vms/objects directory
+ * - its suffix matches exactly one file in the .vms/objects/<prefix> subdirectory **/
+int restore_commit_from_shortened_id(const char* commit_id, Commit& commit) {
+    string id_prefix;
+    string id_suffix;
+    split_prefix_suffix(string(commit_id), id_prefix, id_suffix, PREFIX_LENGTH);
+    
+    ostringstream obj_path;
+    obj_path << ".vms/objects/" << id_prefix;
+
+    const char* obj_subdir = obj_path.str().c_str();
+
+    if (is_valid_dir(obj_subdir)) {
+    
+        DIR *dirptr = opendir(obj_subdir);
+        struct dirent *entry = readdir(dirptr);
+
+        while (entry != NULL) {
+            if (strcmp(".", entry->d_name) != 0 && strcmp("..", entry->d_name) != 0) {
+                if (strncmp(id_suffix.c_str(), entry->d_name, id_suffix.length()) == 0) {
+
+                    obj_path << "/" << entry->d_name;
+
+                }
+            }
+            entry = readdir(dirptr);
+        }
+    }
+    restore(commit, obj_path.str());
+    return 0;
+}
+
 
 int vms_init() {
 
@@ -483,34 +518,8 @@ int vms_rmbranch(const char* branchname) {
 }
 
 int vms_info(const char* commit_id) {
-    string id_prefix;
-    string id_suffix;
-    split_prefix_suffix(string(commit_id), id_prefix, id_suffix, PREFIX_LENGTH);
-    
-    ostringstream obj_path;
-    obj_path << ".vms/objects/" << id_prefix;
-
-    const char* obj_subdir = obj_path.str().c_str();
-
-    if (is_valid_dir(obj_subdir)) {
-    
-        DIR *dirptr = opendir(obj_subdir);
-        struct dirent *entry = readdir(dirptr);
-
-        while (entry != NULL) {
-            if (strcmp(".", entry->d_name) != 0 && strcmp("..", entry->d_name) != 0) {
-                if (strncmp(id_suffix.c_str(), entry->d_name, id_suffix.length()) == 0) {
-
-                    obj_path << "/" << entry->d_name;
-
-                }
-            }
-            entry = readdir(dirptr);
-        }
-    }
-
     Commit commit;
-    restore(commit, obj_path.str());
+    restore_commit_from_shortened_id(commit_id, commit);
 
     cout << commit.log_string() << endl;
     commit.print_tracked_files();
