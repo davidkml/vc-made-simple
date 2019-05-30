@@ -13,4 +13,8 @@ int vms_log();
 
 int vms_status();
 
+int vms_mkbranch(const char* branchname);
+
+int vms_mkbranch(const char* branchname, const char* commit_id);
+
 #endif // VMS_HPP

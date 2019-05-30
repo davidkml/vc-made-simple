@@ -412,6 +412,23 @@ int vms_status() {
     }
 
     cout << endl;
+    
+    return 0;
+}
 
+
+int vms_mkbranch(const char* branchname) {
+    string src_path = get_branch_path();
+    ostringstream dst_path;
+    dst_path << ".vms/branches/" << branchname;
+
+    ifstream src(src_path);
+    ofstream dst(dst_path.str());
+
+    dst << src.rdbuf();
+    return 0;
+}
+
+int vms_mkbranch(const char* branchname, const char* commit_id) {
     return 0;
 }

@@ -261,6 +261,8 @@ int main(int argc, char* argv[]) {
 
             else if (argc == 3) { // no commit_id provided, so make branch at current commit
                 cout << "Creating branch " << argv[2] << " at current location " << endl;
+                return vms_mkbranch(argv[2]);
+
             } else { // provided commitid to create branch at
                 if (!is_valid_commit_id(argv[3])) {
                     cerr << "ERROR: Branch not created. Ambiguous or no matching commit id provided" << endl;
