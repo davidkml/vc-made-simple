@@ -271,6 +271,25 @@ int main(int argc, char* argv[]) {
 
             return 0;
 
+        } else if (strcmp(argv[1], "rmbranch") == 0) {
+            if (argc < 3) {
+                cerr << "ERROR: Must provide name of branch to remove" << endl;
+                return -1;
+            }
+
+            if (strcmp(argv[2], "master") == 0) {
+                cerr << "ERROR: Master branch cannot be removed" << endl;
+                return -1;
+            }
+
+            if (!is_valid_branch(argv[2])) {
+                cout << "No branch named " << argv[2] << endl;
+                return 0;
+            }
+
+            cout << "Removing branch " << argv[2] << endl;
+            return 0;
+
         } else if (strcmp(argv[1], "info") == 0) {
             if (argc < 3) {
                 cerr << "ERROR: Must provide name of commit to look up" << endl;
