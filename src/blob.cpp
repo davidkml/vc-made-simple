@@ -19,8 +19,8 @@ string Blob::hash() {
     return string(hash);
 }
 
-void Blob::show_content() {
-    cout << content;
+string Blob::get_content() {
+    return content;
 }
 
 void Blob::setContent(ifstream& filestream) {

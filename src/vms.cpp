@@ -551,8 +551,7 @@ int vms_info(const char* commit_id, const char* filename) {
     restore(file, blob_path.str());
 
     cout << "===" << endl;
-    file.show_content();
-    cout << endl;
+    cout << file.get_content() << endl;
 
     return 0;
 
