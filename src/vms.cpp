@@ -571,15 +571,8 @@ int vms_info(const char* commit_id, const char* filename) {
         return -1;
     }
 
-    string blob_id_prefix;
-    string blob_id_suffix;
-    split_prefix_suffix(it->second, blob_id_prefix, blob_id_suffix, PREFIX_LENGTH);
-
-    ostringstream blob_path;
-    blob_path << ".vms/objects/" << blob_id_prefix << "/" << blob_id_suffix;
-
     Blob file;
-    restore(file, blob_path.str());
+    restore_blob_from_id(it->second, file);
 
     cout << "===" << endl;
     cout << file.get_content() << endl;
