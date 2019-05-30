@@ -308,9 +308,15 @@ int main(int argc, char* argv[]) {
                 cout << "ERROR: Ambiguous or no matching commit id provided" << endl;
                 return -1;
             }
+            if (argc == 3) {
+                cout << "Printing info for commit " << argv[2] << endl;
+                return vms_info(argv[2]);
 
-            cout << "Printing info for commit " << argv[2] << endl;
-            return vms_info(argv[2]);
+            } else if (argc == 4) { // provided file argument as well.
+                return vms_info(argv[2], argv[3]);
+            } else {
+                cout << "Only one file argument allowed. Usage:" << endl;
+            }
         }
         // More commands on the way
     }

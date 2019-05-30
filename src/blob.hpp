@@ -16,6 +16,7 @@ class Blob {
         Blob();
         Blob(std::ifstream& filestream);
         std::string hash();
+        void show_content();
         void setContent(std::ifstream& filestream);
 
     private:

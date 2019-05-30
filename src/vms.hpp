@@ -21,4 +21,6 @@ int vms_rmbranch(const char* branchname);
 
 int vms_info(const char* commit_id);
 
+int vms_info(const char* commit_id, const char* filename);
+
 #endif // VMS_HPP

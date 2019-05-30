@@ -525,6 +525,35 @@ int vms_info(const char* commit_id) {
     commit.print_tracked_files();
 
     return 0;
+
+}
+
+int vms_info(const char* commit_id, const char* filename) {
+    Commit commit;
+    restore_commit_from_shortened_id(commit_id, commit);
+
+    // verify file is tracked in this commit and load its blob if it is.
+    map<string, string>::iterator it;
     
+    if (!commit.find_in_map(string(filename), it)) {
+        cerr << "File not found in commit " << commit_id << endl;
+        return -1;
+    }
+
+    string blob_id_prefix;
+    string blob_id_suffix;
+    split_prefix_suffix(it->second, blob_id_prefix, blob_id_suffix, PREFIX_LENGTH);
+
+    ostringstream blob_path;
+    blob_path << ".vms/objects/" << blob_id_prefix << "/" << blob_id_suffix;
+
+    Blob file;
+    restore(file, blob_path.str());
+
+    cout << "===" << endl;
+    file.show_content();
+    cout << endl;
+
+    return 0;
 
 }

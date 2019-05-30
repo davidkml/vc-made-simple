@@ -19,6 +19,10 @@ string Blob::hash() {
     return string(hash);
 }
 
+void Blob::show_content() {
+    cout << content;
+}
+
 void Blob::setContent(ifstream& filestream) {
     content.assign(std::istreambuf_iterator<char>(filestream), std::istreambuf_iterator<char>());
 }

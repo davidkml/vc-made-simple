@@ -77,8 +77,9 @@ void Commit::put_to_map(const std::string& key, const std::string& value) {
     file_to_hash[key] = value;
 }
 
-std::map<std::string, std::string>::iterator Commit::find_in_map(const std::string& key) {
-    return file_to_hash.find(key);
+bool Commit::find_in_map(const std::string& key, std::map<std::string, std::string>::iterator& it) {
+    it = file_to_hash.find(key);
+    return it != file_to_hash.end();
 }
 
 void Commit::remove_from_map(const std::string& key) {
