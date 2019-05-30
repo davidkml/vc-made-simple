@@ -202,7 +202,7 @@ int main(int argc, char* argv[]) {
             cout << "Printing repository status" << endl;
             return vms_status();
 
-        } else if (strcmp(argv[1], "checkout") == 0){
+        } else if (strcmp(argv[1], "checkout") == 0) {
             if (argc < 3) {
                 cerr << "Usage: " << endl;
                 return -1;
@@ -248,6 +248,31 @@ int main(int argc, char* argv[]) {
                 return -1;
             }
             
+        } else if (strcmp(argv[1], "mkbranch") == 0) {
+            if (argc < 3) {
+                cerr << "ERROR: Must provide name of branch to create" << endl;
+                return -1;
+            }
+
+            if (is_valid_branch(argv[2])) {
+                cout << "branch " << argv[2] << "already exists. Use checkout to move to it" << endl;
+                return 0;
+            }
+
+            else if (argc == 3) { // no commit_id provided, so make branch at current commit
+                cout << "Creating branch " << argv[2] << " at current location " << endl;
+            } else { // provided commitid to create branch at
+                if (!is_valid_commit_id(argv[3])) {
+                    cerr << "ERROR: Branch not created. Ambiguous or no matching commit id provided" << endl;
+                    return -1;
+                }
+                cout << "Creating branch " << argv[2] << " at commit " << argv[3] << endl;
+            }
+
+            return 0;
+
+        } else if (strcmp(argv[1], "info") == 0) {
+
         }
         // More commands on the way
     }
