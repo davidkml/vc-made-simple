@@ -2,6 +2,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <sys/dir.h>
+
 
 #include <map>
 #include <boost/serialization/map.hpp>
@@ -127,6 +129,68 @@ bool is_valid_dir(const char* dirpath) {
         return false;
     }
     return true;
+}
+
+bool is_valid_branch(const char* branchname) {
+    DIR *dirptr = opendir(".vms/branches");
+    struct dirent *entry = readdir(dirptr);
+
+    while (entry != NULL) {
+        if (strcmp(".", entry->d_name) != 0 && strcmp("..", entry->d_name) != 0) {
+            if (strcmp(branchname, entry->d_name) == 0) {
+
+                return true;
+
+            }
+        }
+        entry = readdir(dirptr);
+
+    }
+
+    return false;
+
+}
+
+bool is_valid_commit_id(const char* commit_id) {
+
+    if (strlen(commit_id) <= PREFIX_LENGTH) {
+        return false;
+    }
+
+    std::string id_prefix;
+    std::string id_suffix;
+    split_prefix_suffix(std::string(commit_id), id_prefix, id_suffix, PREFIX_LENGTH);
+
+    ostringstream oss;
+    oss << ".vms/objects/" << id_prefix;
+
+    const char* obj_subdir = oss.str().c_str();
+    
+    
+    if (is_valid_dir(obj_subdir)) {
+    
+        DIR *dirptr = opendir(obj_subdir);
+        struct dirent *entry = readdir(dirptr);
+
+        int n_matches = 0;
+
+        while (entry != NULL) {
+            if (strcmp(".", entry->d_name) != 0 && strcmp("..", entry->d_name) != 0) {
+                if (strncmp(id_suffix.c_str(), entry->d_name, id_suffix.length()) == 0) {
+
+                    n_matches++;
+
+                }
+            }
+            entry = readdir(dirptr);
+        }
+
+        // must be exactly one match; else false
+        return n_matches == 1;
+
+    } // if not a valid dir, then cannot possibly exist, so return 0
+
+    return false;
 }
 
 std::string get_branch() {

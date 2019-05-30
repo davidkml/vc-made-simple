@@ -202,6 +202,52 @@ int main(int argc, char* argv[]) {
             cout << "Printing repository status" << endl;
             return vms_status();
 
+        } else if (strcmp(argv[1], "checkout") == 0){
+            if (argc < 3) {
+                cerr << "Usage: " << endl;
+                return -1;
+            }
+
+            if (strcmp(argv[2], "branch") == 0) {
+                if (argc < 4) {
+                    cerr << "ERROR: Must provide branch name" << endl;
+                    return -1;
+                }
+
+                if (!is_valid_branch(argv[3])) {
+                    cerr << "ERROR: There is no branch named " << argv[3] << endl;
+                    return -1;
+                }
+                cout << "Now on branch " << argv[3] << endl;
+
+                return 0;
+                
+            } else if (strcmp(argv[2], "files") == 0) {
+                if (argc < 4) {
+                    cerr << "ERROR: Must provide commit id and files. Usage:" << endl;
+                    return -1;
+                }
+
+                if (!is_valid_commit_id(argv[3])) {
+                    cerr << "ERROR: Ambiguous or no matching commit id provided" << endl;
+                    return -1;
+                }
+
+                // Check that files have been provided
+
+                if (argc == 4) { // Check out all files in the commit
+                    cout << "Checking out all files from commit " << argv[3] << endl;
+                } else { // files given
+                    cout << "Checking out files" << endl;
+                }
+
+                return 0;
+
+            } else {
+                cerr << "Must checkout branch or checkout files. Usage:" << endl;
+                return -1;
+            }
+            
         }
         // More commands on the way
     }

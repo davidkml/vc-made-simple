@@ -20,6 +20,10 @@ bool is_valid_file(const char* filepath);
 
 bool is_valid_dir(const char* dirpath);
 
+bool is_valid_branch(const char* branchname);
+
+bool is_valid_commit_id(const char* commit_id);
+
 std::string get_branch();
 
 std::string get_branch_path();
