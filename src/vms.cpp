@@ -104,20 +104,21 @@ int restore_blob_from_id(const string& blob_id, Blob& blob) {
     return 0;
 }
 
-/** Finds the position of the last trailing slash of the filepath and returns its index. 
- * If no slash is found in the filepath, then the function returns -1.
- * Examples: 
+/** Creates directory path to file if it doesn't already exist and returns position of the end slash, or 0 if given file is not in a subdirectory.
  * Input: .vms/objects/de/<file> 
  * Output: 15
  * 
  * Input: foo
- * Output: -1 **/
-int find_end_slash(string filepath) {
+ * Output: 0 **/
+int create_directory_path(string filepath) {
     int pos = 0;
     size_t ret = 0;
     while(ret != string::npos) {
         pos = ret;
         ret = filepath.find("/", pos+1);
+        if (pos != 0) {
+            mkdir(filepath.substr(0, pos+1).c_str(), 0755);
+        }
     }
     return pos;
 }
@@ -623,21 +624,11 @@ int vms_checkout_files(const char* commit_id, const int argc, char* const argv[]
     }
 
     // User answered "y", so checkout files.
-
-    int es_pos;
     for (l_elem = found_files.begin(); l_elem != found_files.end(); l_elem++) {
         
         commit.find_in_map(*l_elem, m_elem);
-        es_pos = find_end_slash(m_elem->first);
+        create_directory_path(m_elem->first);
 
-        if (es_pos != 0) { // file is located inside some directory(s) so must check that the directories exist
-
-            string dirpath = m_elem->first.substr(0, es_pos+1);
-            if (!is_valid_dir(dirpath.c_str())) {
-                cout << "Skipping checkout of " << m_elem->first << ". Directories do not exist. Create directory path " << dirpath << " and try again." << endl;
-                continue;
-            } // otherwise, copy as normal
-        }
         Blob file;
         restore_blob_from_id(m_elem->second, file);
 

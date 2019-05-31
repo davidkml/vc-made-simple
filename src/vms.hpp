@@ -23,6 +23,8 @@ int vms_info(const char* commit_id);
 
 int vms_info(const char* commit_id, const char* filename);
 
+int vms_checkout_files(const char* commit_id);
+
 int vms_checkout_files(const char* commit_id, const int argc, char* const argv[]);
 
 #endif // VMS_HPP
