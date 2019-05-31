@@ -218,9 +218,14 @@ int main(int argc, char* argv[]) {
                     cerr << "ERROR: There is no branch named " << argv[3] << endl;
                     return -1;
                 }
-                cout << "Now on branch " << argv[3] << endl;
 
-                return 0;
+                if (strcmp(argv[3], get_branch().c_str()) == 0) {
+                    cout << "Already on branch " << argv[3] << endl;
+                    return 0;
+                }
+                
+                cout << "Now on branch " << argv[3] << endl;
+                return vms_checkout_branch(argv[3]);
                 
             } else if (strcmp(argv[2], "files") == 0) {
                 if (argc < 4) {

@@ -582,6 +582,47 @@ int vms_info(const char* commit_id, const char* filename) {
 
 }
 
+int vms_checkout_branch(const char* branchname) {
+    // Ask user to verify thay want to checkout the branch.
+    string input;
+    cout << "Checking out branch " << branchname << "..." << endl;
+    cout << "Warning: checking out branch will overwrite all uncommitted changes in the current branch." << endl; 
+    cout << "Confirm checkout (y/n):";
+    getline(cin, input);
+
+    while (input != "y" && input != "n") {
+        cout << "Please enter y or n:";
+        getline(cin, input);
+    }
+
+    if (input == "n") {
+        return 0;
+    }
+
+    ostringstream branch_fpath;
+    branch_fpath << ".vms/branches/" << branchname;
+
+    std::ifstream branch_ifs(branch_fpath.str());
+
+    std::string commit_id;
+    getline(branch_ifs, commit_id);
+    branch_ifs.close();
+
+    vms_checkout_files(commit_id.c_str());
+
+    // check HEAD to point to this branch
+    create_and_write_file(".vms/HEAD", branchname, 0644);
+
+    // clear staging area
+    map<string, string> index;  
+    restore< map<string, string> >(index, ".vms/index");
+    index.clear();
+    save< map<string, string> >(index, ".vms/index");
+
+    return 0;
+
+}
+
 int vms_checkout_files(const char* commit_id) {
     Commit commit;
     restore_commit_from_shortened_id(commit_id, commit);
