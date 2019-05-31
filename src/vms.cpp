@@ -582,6 +582,52 @@ int vms_info(const char* commit_id, const char* filename) {
 
 }
 
+int vms_checkout_files(const char* commit_id) {
+    Commit commit;
+    restore_commit_from_shortened_id(commit_id, commit);
+
+    map<string, string>::iterator m_elem;
+    map<string, string>& commit_map_ref = commit.get_map();
+
+    // Ask user to verify they want to checkout these files.
+    cout << commit.log_string() << endl;
+    cout << "Checking out files" << endl;
+    for (m_elem = commit_map_ref.begin(); m_elem != commit_map_ref.end(); m_elem++) {
+        cout << "    " << m_elem->first << endl;
+    }
+    cout << endl;
+
+    string input;
+    cout << "Warning: checking out files may overwrite uncommitted changes for these files in the working directory." << endl;
+    cout << "Confirm checkout (y/n):";
+    getline(cin, input);
+
+    while (input != "y" && input != "n") {
+        cout << "Please enter y or n:";
+        getline(cin, input);
+    }
+
+    if (input == "n") {
+        return 0;
+    }
+
+    // User answered "y", so checkout files.
+    for (m_elem = commit_map_ref.begin(); m_elem != commit_map_ref.end(); m_elem++) {
+        
+        create_directory_path(m_elem->first);
+
+        Blob file;
+        restore_blob_from_id(m_elem->second, file);
+
+        ofstream ofs(m_elem->first);
+        ofs << file.get_content();
+        ofs.close();
+    }
+
+    return 0;
+
+}
+
 int vms_checkout_files(const char* commit_id, const int argc, char* const argv[]) {
     Commit commit;
     restore_commit_from_shortened_id(commit_id, commit);
@@ -638,6 +684,5 @@ int vms_checkout_files(const char* commit_id, const int argc, char* const argv[]
     }
 
     return 0;
-
 
 }
