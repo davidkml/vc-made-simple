@@ -567,7 +567,7 @@ int vms_info(const char* commit_id, const char* filename) {
     // verify file is tracked in this commit and load its blob if it is.
     map<string, string>::iterator it;
     
-    if (!commit.find_in_map(string(filename), it)) {
+    if (!commit.find_in_map_and_get_iter(string(filename), it)) {
         cerr << "File not found in commit " << commit_id << endl;
         return -1;
     }
@@ -677,7 +677,7 @@ int vms_checkout_files(const char* commit_id, const int argc, char* const argv[]
     map<string, string>::iterator m_elem;
     list<string> found_files;
     for (int i = 4; i < argc; i++) {
-        if (commit.find_in_map(string(argv[i]), m_elem)) {
+        if (commit.find_in_map_and_get_iter(string(argv[i]), m_elem)) {
             found_files.push_back(m_elem->first);
         }
     }
@@ -713,7 +713,7 @@ int vms_checkout_files(const char* commit_id, const int argc, char* const argv[]
     // User answered "y", so checkout files.
     for (l_elem = found_files.begin(); l_elem != found_files.end(); l_elem++) {
         
-        commit.find_in_map(*l_elem, m_elem);
+        commit.find_in_map_and_get_iter(*l_elem, m_elem);
         create_directory_path(m_elem->first);
 
         Blob file;

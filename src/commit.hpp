@@ -24,7 +24,7 @@ class Commit {
         std::map<std::string, std::string> get_map();
         bool map_contains(const std::string& key);
         
-        bool find_in_map(const std::string& key, std::map<std::string, std::string>::iterator& it);
+        bool find_in_map_and_get_iter(const std::string& key, std::map<std::string, std::string>::iterator& it);
         void put_to_map(const std::string& key, const std::string& value);
         void remove_from_map(const std::string& key);
         

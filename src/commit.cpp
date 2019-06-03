@@ -52,14 +52,14 @@ std::string Commit::hash() {
 
 std::string Commit::log_string() {
     std::ostringstream oss;
-    oss << "commit  " << hash() << std::endl;
+    oss << "commit  " << hash() << "\n";
     oss << "Date    " << ctime(&datetime);
     if (second_parent_ref != "") {
-        oss << "parents " << first_parent_ref << std::endl;
-        oss << "        " << second_parent_ref << std::endl;
+        oss << "parents " << first_parent_ref << "\n";
+        oss << "        " << second_parent_ref << "\n";
 
     } else {
-        oss << "parent  " << first_parent_ref << std::endl;
+        oss << "parent  " << first_parent_ref << "\n";
     }
     oss << "\n    " << message << std::endl;
 
@@ -92,7 +92,7 @@ bool Commit::map_contains(const std::string& key) {
     return it != file_to_hash.end();
 }
 
-bool Commit::find_in_map(const std::string& key, std::map<std::string, std::string>::iterator& it) {
+bool Commit::find_in_map_and_get_iter(const std::string& key, std::map<std::string, std::string>::iterator& it) {
     it = file_to_hash.find(key);
     return it != file_to_hash.end();
 }
