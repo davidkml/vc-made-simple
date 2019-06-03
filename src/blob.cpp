@@ -14,12 +14,12 @@ Blob::Blob(ifstream& filestream) {
     setContent(filestream);
 }
 
-string Blob::hash() {
+string Blob::hash() const {
     boost::compute::detail::sha1 hash(content);
     return string(hash);
 }
 
-string Blob::get_content() {
+string Blob::get_content() const {
     return content;
 }
 

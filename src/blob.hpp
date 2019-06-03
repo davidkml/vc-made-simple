@@ -15,8 +15,10 @@ class Blob {
     public:
         Blob();
         Blob(std::ifstream& filestream);
-        std::string hash();
-        std::string get_content();
+        
+        std::string hash() const;
+        std::string get_content() const;
+
         void setContent(std::ifstream& filestream);
 
     private:
