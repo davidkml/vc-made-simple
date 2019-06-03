@@ -19,6 +19,21 @@
 
 using namespace std;
 
+int restore_parent_commit(Commit& commit) {
+    string parent_hash = get_parent_ref();
+    ostringstream parent_fpath;
+
+    string parent_hash_prefix;
+    string parent_hash_suffix;
+    split_prefix_suffix(parent_hash, parent_hash_prefix, parent_hash_suffix, PREFIX_LENGTH);
+
+    parent_fpath << ".vms/objects/" << parent_hash_prefix << "/" << parent_hash_suffix;
+
+    restore<Commit>(commit, parent_fpath.str());
+
+    return 0;
+}
+
 bool is_initialized() {
     struct stat s;
     int ret = stat(".vms", &s);
@@ -33,7 +48,6 @@ bool is_staged_file(const char* filepath) {
         return false;
     }
 
-    // Load index
     map<string, string> index;  
     restore< map<string, string> >(index, ".vms/index");
 
@@ -49,20 +63,10 @@ bool is_tracked_file(const char* filepath) {
         return false;
     }
 
-    // Load parent commit. 
     Commit parent_commit;
-    string parent_hash = get_parent_ref();
-    ostringstream parent_fpath;
 
-    string parent_hash_prefix;
-    string parent_hash_suffix;
-    split_prefix_suffix(parent_hash, parent_hash_prefix, parent_hash_suffix, PREFIX_LENGTH);
+    restore_parent_commit(parent_commit);
 
-    parent_fpath << ".vms/objects/" << parent_hash_prefix << "/" << parent_hash_suffix;
-
-    restore<Commit>(parent_commit, parent_fpath.str());
-
-    // Check if file found in parent commit
     return parent_commit.map_contains(string(filepath));
 
 }
@@ -73,18 +77,9 @@ bool is_modified_tracked_file(const char* filepath) {
         return false;
     }
 
-    // Load parent commit
     Commit parent_commit;
-    string parent_hash = get_parent_ref();
-    ostringstream parent_fpath;
 
-    string parent_hash_prefix;
-    string parent_hash_suffix;
-    split_prefix_suffix(parent_hash, parent_hash_prefix, parent_hash_suffix, PREFIX_LENGTH);
-
-    parent_fpath << ".vms/objects/" << parent_hash_prefix << "/" << parent_hash_suffix;
-
-    restore<Commit>(parent_commit, parent_fpath.str());
+    restore_parent_commit(parent_commit);
 
     map<string, string> parent_map = parent_commit.get_map();
 
@@ -95,7 +90,7 @@ bool is_modified_tracked_file(const char* filepath) {
         return true;    // Not being tracked, so by definition is modified relative to "tracked version"
     } 
 
-    // get its hash and compare it with hash of file of same name in working directory. If it is not equal, then 
+    // get its hash and compare it with hash of file of same name in working directory. If it is not equal, then is modified
     return !file_hash_equal_to_working_copy(string(filepath), it->second);
 }
 
