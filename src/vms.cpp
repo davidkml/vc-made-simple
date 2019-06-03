@@ -431,10 +431,10 @@ int vms_status() {
 
     restore<Commit>(parent_commit, parent_fpath.str());
 
-    // Get reference to map of parent commit
-    map<string, string>& parent_map_ref = parent_commit.get_map();
+    // Get copy of map of parent commit
+    map<string, string> parent_map = parent_commit.get_map();
 
-    for (it = parent_map_ref.begin(); it != parent_map_ref.end(); ++it) {
+    for (it = parent_map.begin(); it != parent_map.end(); ++it) {
         if (!is_staged_file(it->first.c_str())) {
             if (!is_valid_file(it->first.c_str())) { // unstaged tracked file has been deleted from working directory
 
@@ -628,12 +628,12 @@ int vms_checkout_files(const char* commit_id) {
     restore_commit_from_shortened_id(commit_id, commit);
 
     map<string, string>::iterator m_elem;
-    map<string, string>& commit_map_ref = commit.get_map();
+    map<string, string> commit_map = commit.get_map();
 
     // Ask user to verify they want to checkout these files.
     cout << commit.log_string() << endl;
     cout << "Checking out files" << endl;
-    for (m_elem = commit_map_ref.begin(); m_elem != commit_map_ref.end(); m_elem++) {
+    for (m_elem = commit_map.begin(); m_elem != commit_map.end(); m_elem++) {
         cout << "    " << m_elem->first << endl;
     }
     cout << endl;
@@ -653,7 +653,7 @@ int vms_checkout_files(const char* commit_id) {
     }
 
     // User answered "y", so checkout files.
-    for (m_elem = commit_map_ref.begin(); m_elem != commit_map_ref.end(); m_elem++) {
+    for (m_elem = commit_map.begin(); m_elem != commit_map.end(); m_elem++) {
         
         create_directory_path(m_elem->first);
 

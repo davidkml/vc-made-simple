@@ -21,7 +21,7 @@ class Commit {
         std::string log_string();
         std::string tracked_files_string();
         void print(); // delete after testing
-        std::map<std::string, std::string>& get_map();
+        std::map<std::string, std::string> get_map();
         bool map_contains(const std::string& key);
         
         bool find_in_map(const std::string& key, std::map<std::string, std::string>::iterator& it);

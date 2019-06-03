@@ -28,11 +28,8 @@ Commit::Commit(const std::string& msg) {
 
     restore<Commit>(parent_commit, parent_fpath.str());
     
-    // get reference to parent's file_to_hash map
-    std::map<std::string, std::string>& parent_map = parent_commit.get_map();
-
-    // invoke copy constructor on parent's map to current obj 
-    file_to_hash = parent_map; 
+    // copy parent's map to current object
+    file_to_hash = parent_commit.get_map();
     
     // set remaining fields
     datetime = time(0);
@@ -81,7 +78,7 @@ std::string Commit::tracked_files_string() {
     return oss.str();
 }
 
-std::map<std::string, std::string>& Commit::get_map() {
+std::map<std::string, std::string> Commit::get_map() {
     return file_to_hash;
 }
 

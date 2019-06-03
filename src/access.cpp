@@ -86,13 +86,12 @@ bool is_modified_tracked_file(const char* filepath) {
 
     restore<Commit>(parent_commit, parent_fpath.str());
 
-    // Get reference to commit's map and get the hash of the file if it is found
-    map<string, string>& parent_map_ref = parent_commit.get_map();
+    map<string, string> parent_map = parent_commit.get_map();
 
     map<string, string>::iterator it;
-    it = parent_map_ref.find(string(filepath));
+    it = parent_map.find(string(filepath));
 
-    if (it == parent_map_ref.end()) {
+    if (it == parent_map.end()) {
         return true;    // Not being tracked, so by definition is modified relative to "tracked version"
     } 
 
