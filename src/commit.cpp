@@ -69,21 +69,20 @@ std::string Commit::log_string() {
     return oss.str();
 }
 
+std::string Commit::tracked_files_string() {
+    std::ostringstream oss;
+
+    std::map<std::string,std::string>::iterator it;
+    oss << "Files tracked in this commit\n\n";
+    for (it=file_to_hash.begin(); it!=file_to_hash.end(); ++it) {
+        oss << "    " << it->first << "\n";
+    }
+
+    return oss.str();
+}
+
 std::map<std::string, std::string>& Commit::get_map() {
     return file_to_hash;
-}
-
-void Commit::put_to_map(const std::string& key, const std::string& value) {
-    file_to_hash[key] = value;
-}
-
-bool Commit::find_in_map(const std::string& key, std::map<std::string, std::string>::iterator& it) {
-    it = file_to_hash.find(key);
-    return it != file_to_hash.end();
-}
-
-void Commit::remove_from_map(const std::string& key) {
-    file_to_hash.erase(key);
 }
 
 bool Commit::map_contains(const std::string& key) {
@@ -96,6 +95,18 @@ bool Commit::map_contains(const std::string& key) {
     return it != file_to_hash.end();
 }
 
+bool Commit::find_in_map(const std::string& key, std::map<std::string, std::string>::iterator& it) {
+    it = file_to_hash.find(key);
+    return it != file_to_hash.end();
+}
+
+void Commit::put_to_map(const std::string& key, const std::string& value) {
+    file_to_hash[key] = value;
+}
+
+void Commit::remove_from_map(const std::string& key) {
+    file_to_hash.erase(key);
+}
 
 void Commit::print() {
     char* dt = ctime(&datetime);
@@ -109,14 +120,4 @@ void Commit::print() {
     for (it=file_to_hash.begin(); it!=file_to_hash.end(); ++it) {
         std::cout << it->first << " => " << it->second << std::endl;
     }
-}
-
-void Commit::print_tracked_files() {
-    std::map<std::string,std::string>::iterator it;
-    std::cout << "Files tracked in this commit\n" << std::endl;
-    for (it=file_to_hash.begin(); it!=file_to_hash.end(); ++it) {
-        std::cout << "    " << it->first << std::endl;
-    }
-
-    std::cout << std::endl;
 }

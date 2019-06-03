@@ -554,7 +554,7 @@ int vms_info(const char* commit_id) {
     restore_commit_from_shortened_id(commit_id, commit);
 
     cout << commit.log_string() << endl;
-    commit.print_tracked_files();
+    cout << commit.tracked_files_string() << endl;
 
     return 0;
 
