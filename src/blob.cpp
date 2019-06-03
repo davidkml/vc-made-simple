@@ -11,7 +11,7 @@ Blob::Blob() {
 
 
 Blob::Blob(ifstream& filestream) {
-    setContent(filestream);
+    set_content(filestream);
 }
 
 string Blob::hash() const {
@@ -23,6 +23,6 @@ string Blob::get_content() const {
     return content;
 }
 
-void Blob::setContent(ifstream& filestream) {
-    content.assign(std::istreambuf_iterator<char>(filestream), std::istreambuf_iterator<char>());
+void Blob::set_content(ifstream& filestream) {
+    content.assign(istreambuf_iterator<char>(filestream), istreambuf_iterator<char>());
 }
