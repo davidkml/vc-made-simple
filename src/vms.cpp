@@ -362,75 +362,132 @@ int vms_status() {
         return -1;
     }
 
+    stringstream status_stream;
+
     DIR *branch_dirptr = opendir(".vms/branches");
     struct dirent *branch_entry = readdir(branch_dirptr);
 
-    cout << "=== Branches ===\n";
+    status_stream << "On branch " << current_branch.c_str() << "\n";
+
+    bool other_branches = false;
 
     while (branch_entry != NULL) {
-        if (strcmp(".", branch_entry->d_name) != 0 && strcmp("..", branch_entry->d_name) != 0) {
-            if (strcmp(current_branch.c_str(), branch_entry->d_name) == 0) {
-                cout << "*";
-            }
 
-            cout << branch_entry->d_name << "\n";
+        if (strcmp(".", branch_entry->d_name) != 0 && strcmp("..", branch_entry->d_name) != 0) {
+
+            if (strcmp(current_branch.c_str(), branch_entry->d_name) != 0) {
+                
+                if (!other_branches) {
+                    other_branches = true;
+                    status_stream << "\nAlternate branches:\n\n";
+                }
+                
+                status_stream << "    " << branch_entry->d_name << "\n";
+
+            }
 
         }
         
         branch_entry = readdir(branch_dirptr);
 
     }
-
-    cout << endl;
+    if (other_branches) {
+        status_stream << endl;
+    }
 
 
     // List all files currently staged. (and list type of modification: modified, deleted)
     map<string, string> index;  
     restore< map<string, string> >(index, ".vms/index");
     map<string,string>::iterator it;
-    cout << "=== Staged Files ===\n";
+    
+    bool staged_changes = false;
 
     for (it = index.begin(); it != index.end(); ++it) {
         // if new (not currently tracked)
         if (!is_tracked_file(it->first.c_str())) {
 
-            cout << "new file:    " << it->first << "\n";
+            if (!staged_changes) {
+                staged_changes = true;
+                status_stream << "Changes staged for commit\n";
+                status_stream << "  (use \"vms unstage <file>...\" to unstage changes to file)\n";
+                status_stream << "  (use \"vms commit <message>...\" to commit all staged changes)\n\n";
+            }
+
+            status_stream << "    new file:    " << it->first << "\n";
 
         } else if (it->second == DELETED_FILE) {    // if deleted (mapped to delete)
+            
+            if (!staged_changes) {
+                staged_changes = true;
+                status_stream << "Changes staged for commit\n";
+                status_stream << "  (use \"vms unstage <file>...\" to unstage changes to file)\n";
+                status_stream << "  (use \"vms commit <message>...\" to commit all staged changes)\n\n";
+            }
 
-            cout << "deleted:     " << it->first << "\n";
+            status_stream << "    deleted:     " << it->first << "\n";
 
         } else if (is_modified_tracked_file(it->first.c_str())) { // if modified
 
-            cout << "modified:    " << it->first << "\n";
+            if (!staged_changes) {
+                staged_changes = true;
+                status_stream << "Changes staged for commit\n";
+                status_stream << "  (use \"vms unstage <file>...\" to unstage changes to file)\n";
+                status_stream << "  (use \"vms commit <message>...\" to commit all staged changes)\n\n";
+            }
+
+            status_stream << "    modified:    " << it->first << "\n";
 
         } 
 
         // Note: the order of these checks is important
         
     }
-    cout << endl;
+    if (staged_changes) {
+        status_stream << endl;
+    }
 
     // List all files that have been staged and have been modified since staging (and the type of modification)
-    cout << "=== Unstaged Changes ===\n";
 
     // TODO: Improve performance of this loop.
     // TODO: Complicated logic to achieve desired behavior: simplify control logic if you can, to make things more clear.
+
+    bool unstaged_changes = false;
     for (it = index.begin(); it != index.end(); ++it) {
 
         if (it->second != DELETED_FILE) {
+
             if (!is_valid_file(it->first.c_str())) {    // if previously staged file has been deleted, list it as deleted
-                cout << "deleted:     " << it->first << "\n";
+                if (!unstaged_changes) {
+                    unstaged_changes = true;
+                    status_stream << "Changes not yet staged for commit:\n";
+                    status_stream << "  (use \"vms stage <file>...\" to update or stage changes to be committed)\n\n";
+                }
+
+                status_stream << "    deleted:     " << it->first << "\n";
             } else if (!file_hash_equal_to_working_copy(it->first, it->second)) {    // if tracked file has been modified, list it as modified
-                cout << "modified:    " << it->first << "\n";
+                if (!unstaged_changes) {
+                    unstaged_changes = true;
+                    status_stream << "Changes not yet staged for commit:\n";
+                    status_stream << "  (use \"vms stage <file>...\" to update or stage changes to be committed)\n\n";
+                }
+
+                status_stream << "    modified:    " << it->first << "\n";
             }
 
         } else { // File staged as deleted
             if (is_valid_file(it->first.c_str())) { // if file is no longer deleted and can be staged to be added again, should notify user.. by definition, it is already tracked, so maybe check if it has changes. If so, then list it as modified... if it doesn't... then problem because can't stage if no changes to stage. Easy way around it is to remove the check before staging, but bad for performance because need to do check in status loop. But this loop is fairly small, supposedly. Okay.
-                    cout << "modified:    " << it->first << "\n";
+                if (!unstaged_changes) {
+                    unstaged_changes = true;
+                    status_stream << "Changes not yet staged for commit:\n";
+                    status_stream << "  (use \"vms stage <file>...\" to update or stage changes to be committed)\n\n";
+                }
+
+                status_stream << "    modified:    " << it->first << "\n";
             }
         }
     }
+
     // list all tracked files that have not been staged and have been modified (and the type of modification)
 
     // Load parent commit
@@ -452,18 +509,32 @@ int vms_status() {
     for (it = parent_map.begin(); it != parent_map.end(); ++it) {
         if (!is_staged_file(it->first.c_str())) {
             if (!is_valid_file(it->first.c_str())) { // unstaged tracked file has been deleted from working directory
+                if (!unstaged_changes) {
+                    unstaged_changes = true;
+                    status_stream << "Changes not yet staged for commit:\n";
+                    status_stream << "  (use \"vms stage <file>...\" to update or stage changes to be committed)\n\n";
+                }
 
-                cout << "deleted:     " << it->first << "\n";
+                status_stream << "    deleted:     " << it->first << "\n";
             
             } else if (is_modified_tracked_file(it->first.c_str())) {
-            
-                cout << "modified:    " << it->first << "\n";
+                if (!unstaged_changes) {
+                    unstaged_changes = true;
+                    status_stream << "Changes not yet staged for commit:\n";
+                    status_stream << "  (use \"vms stage <file>...\" to update or stage changes to be committed)\n\n";
+                }
+
+                status_stream << "    modified:    " << it->first << "\n";
             
             }
         }
     }
 
-    cout << endl;
+    if (!unstaged_changes && !staged_changes) {
+        status_stream << "No changes to staged or tracked files, working tree clean\n\n";
+    } else if (unstaged_changes) {
+        status_stream << endl;
+    }
 
     // list all untracked files in this directory
     list<string> dirs;
@@ -471,29 +542,39 @@ int vms_status() {
     DIR *root_dirptr = opendir(".");
     struct dirent *root_entry = readdir(root_dirptr);
 
-    cout << "=== Untracked Files ===\n";
+    bool untracked_files = false;
 
     while (root_entry != NULL) {
-        if (is_valid_dir(root_entry->d_name) && strcmp(".", root_entry->d_name) != 0 && strcmp("..", root_entry->d_name)) {
+        if (is_valid_dir(root_entry->d_name) && strcmp(".", root_entry->d_name) != 0 && strcmp("..", root_entry->d_name) != 0 && strcmp(".vms", root_entry->d_name) != 0) {
             dirs.push_back(string(root_entry->d_name));
         }
         if (is_valid_file(root_entry->d_name) && !is_tracked_file(root_entry->d_name) && !is_staged_file(root_entry->d_name)) {
-            cout << root_entry->d_name << "\n";
+            if (!untracked_files) {
+                untracked_files = true;
+                status_stream << "Untracked files:\n";
+                status_stream << "  (use \"vms stage <file>...\" to include file to be committed and tracked)\n\n";
+            }
+            status_stream << "    " << root_entry->d_name << "\n";
         }
         root_entry = readdir(root_dirptr);
 
     }
 
-    cout << endl;
-
-    cout << "=== Sub-directories ===\n";
-    list<string>::iterator dirs_iter;
-    for (dirs_iter = dirs.begin(); dirs_iter != dirs.end(); ++dirs_iter) {
-        cout << *dirs_iter << "\n";
+    if (untracked_files) {
+        status_stream << endl;
     }
 
-    cout << endl;
+
+    if (!dirs.empty()) {
+        status_stream << "Sub-directories:\n";
+        list<string>::iterator dirs_iter;
+        for (dirs_iter = dirs.begin(); dirs_iter != dirs.end(); ++dirs_iter) {
+            status_stream << "    " << *dirs_iter << "/\n";
+        }
+        status_stream << endl;
+    }
     
+    cout << status_stream.rdbuf();
     return 0;
 }
 
