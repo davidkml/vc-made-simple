@@ -21,7 +21,7 @@ using namespace std;
 
 int restore_parent_commit(Commit& commit) {
     string parent_hash;
-    
+
     if (get_parent_ref(parent_hash) != 0) {
         return -1;
     }
@@ -35,6 +35,11 @@ int restore_parent_commit(Commit& commit) {
     parent_fpath << ".vms/objects/" << parent_hash_prefix << "/" << parent_hash_suffix;
 
     restore<Commit>(commit, parent_fpath.str());
+
+    if (commit.hash() != parent_hash) {
+        std::cerr << "Fatal error has occurred in retrieval of commit: uuid mismatch. Archived object may have been corrupted. Exiting..." << std::endl;
+        return -1;
+    }
 
     return 0;
 }

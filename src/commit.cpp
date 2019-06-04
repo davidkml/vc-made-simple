@@ -32,6 +32,11 @@ Commit::Commit(const std::string& msg) {
     parent_fpath << ".vms/objects/" << parent_hash_prefix << "/" << parent_hash_suffix;
 
     restore<Commit>(parent_commit, parent_fpath.str());
+    if (parent_commit.hash() != parent_hash) {
+        std::cerr << "Fatal error has occurred in retrieval of commit: uuid mismatch. Archived object may have been corrupted. Exiting..." << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
     
     // copy parent's map to current object
     file_to_hash = parent_commit.get_map();

@@ -67,6 +67,9 @@ int restore_commit_from_shortened_id(const char* commit_id, Commit& commit) {
     string id_suffix;
     split_prefix_suffix(string(commit_id), id_prefix, id_suffix, PREFIX_LENGTH);
     
+    ostringstream full_id;
+    full_id << id_prefix;
+
     ostringstream obj_path;
     obj_path << ".vms/objects/" << id_prefix;
 
@@ -82,13 +85,21 @@ int restore_commit_from_shortened_id(const char* commit_id, Commit& commit) {
                 if (strncmp(id_suffix.c_str(), entry->d_name, id_suffix.length()) == 0) {
 
                     obj_path << "/" << entry->d_name;
+                    full_id << entry->d_name;
 
                 }
             }
             entry = readdir(dirptr);
         }
     }
-    restore(commit, obj_path.str());
+    restore<Commit>(commit, obj_path.str());
+
+    // verify no tampering or corruption of restored object
+    if (commit.hash() != full_id.str()) {
+        cerr << "Fatal error has occurred in retrieval of commit: uuid mismatch. Archived object may have been corrupted. Exiting..." << endl;
+        return -1;
+    }
+
     return 0;
 }
 
@@ -100,7 +111,13 @@ int restore_blob_from_full_id(const string& blob_id, Blob& blob) {
     ostringstream blob_path;
     blob_path << ".vms/objects/" << blob_id_prefix << "/" << blob_id_suffix;
 
-    restore(blob, blob_path.str());
+    restore<Blob>(blob, blob_path.str());
+
+    // verify no tampering or corruption of restored object
+    if (blob.hash() != blob_id) {
+        cerr << "Fatal error has occurred in retrieval of file contents: uuid mismatch. Archived object may have been corrupted. Exiting..." << endl;
+        return -1;
+    }
 
     return 0;
 }
@@ -403,8 +420,8 @@ int vms_status() {
                     other_branches = true;
                     status_stream << "\nAlternate branches:\n\n";
                 }
-                
-                get_id_from_branch(branch_entry->d_name, branch_id;
+
+                get_id_from_branch(branch_entry->d_name, branch_id);
                 status_stream << "    " << branch_entry->d_name << "  [" << branch_id.substr(0,6) << "]\n";
 
             }
@@ -525,6 +542,11 @@ int vms_status() {
     parent_fpath << ".vms/objects/" << parent_hash_prefix << "/" << parent_hash_suffix;
 
     restore<Commit>(parent_commit, parent_fpath.str());
+    if (parent_commit.hash() != parent_hash) {
+        std::cerr << "Fatal error has occurred in retrieval of commit: uuid mismatch. Archived object may have been corrupted. Exiting..." << std::endl;
+        return -1;
+    }
+
 
     // Get copy of map of parent commit
     map<string, string> parent_map = parent_commit.get_map();
@@ -698,7 +720,6 @@ int vms_info(const char* commit_id, const char* filename) {
     Blob file;
     restore_blob_from_full_id(it->second, file);
 
-    cout << "===\n";
     cout << file.get_content() << endl;
 
     return 0;
