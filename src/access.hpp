@@ -24,11 +24,11 @@ bool is_valid_branch(const char* branchname);
 
 bool is_valid_commit_id(const char* commit_id);
 
-std::string get_branch();
+int get_branch(std::string& strbuf);
 
-std::string get_branch_path();
+int get_branch_path(std::string& strbuf);
 
-std::string get_parent_ref();
+int get_parent_ref(std::string& strbuf);
 
 int split_prefix_suffix(const std::string& str, std::string& prefix, std::string& suffix, int n);
 

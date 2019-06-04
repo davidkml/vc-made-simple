@@ -20,7 +20,12 @@
 using namespace std;
 
 int restore_parent_commit(Commit& commit) {
-    string parent_hash = get_parent_ref();
+    string parent_hash;
+    
+    if (get_parent_ref(parent_hash) != 0) {
+        return -1;
+    }
+
     ostringstream parent_fpath;
 
     string parent_hash_prefix;
@@ -187,46 +192,52 @@ bool is_valid_commit_id(const char* commit_id) {
     return false;
 }
 
-std::string get_branch() {
-    std::ifstream head_ifs(".vms/HEAD");
+int get_branch(string& strbuf) {
+    ifstream head_ifs(".vms/HEAD");
     if (!head_ifs.is_open()) {
-        std::cerr << "Unable to open file .vms/HEAD" << std::endl;
-        // TODO: add exception handling code
+        cerr << "Error occurred in retrieving branch: unable to open file .vms/HEAD" << endl;
+        return -1;
     }
 
-    std::string current_branch;
-    std::getline(head_ifs, current_branch);
+    getline(head_ifs, strbuf);
     head_ifs.close();
 
-    return current_branch;
+    return 0;
 }
 
-std::string get_branch_path() {
+int get_branch_path(string& strbuf) {
 
-    std::string branch_name = get_branch();
+    string branch_name;
+    if (get_branch(branch_name) != 0) {
+        return -1;
+    }
 
-    std::ostringstream branch_fpath;
+    ostringstream branch_fpath;
     branch_fpath << ".vms/branches/" << branch_name;
+    strbuf = branch_fpath.str();
 
-    return branch_fpath.str();
+    return 0;
 
 }
 
-std::string get_parent_ref() {
+int get_parent_ref(string& strbuf) {
 
-    std::string branch_fpath = get_branch_path();
+    string branch_fpath;
+    
+    if (get_branch_path(branch_fpath) != 0) {
+        return -1;
+    }
 
     std::ifstream branch_ifs(branch_fpath);
     if (!branch_ifs.is_open()) {
-        std::cerr << "Unable to open file " << branch_fpath << std::endl;
-        // TODO: add exception handling code
+        std::cerr << "Error occurred in retrieving parent commit id: unable to open file " << branch_fpath << std::endl;
+        return -1;
     }
 
-    std::string parent_commit_hash;
-    getline(branch_ifs, parent_commit_hash);
+    getline(branch_ifs, strbuf);
     branch_ifs.close();
 
-    return parent_commit_hash;
+    return 0;
 }
 
 int split_prefix_suffix(const std::string& str, std::string& prefix, std::string& suffix, int n) {

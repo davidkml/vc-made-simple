@@ -297,7 +297,10 @@ int vms_commit(const char* msg) {
     // Change position of branch pointed to by HEAD
     string commit_hash = commit.hash();
     
-    string branch_fpath = get_branch_path();
+    string branch_fpath;
+    if (get_branch_path(branch_fpath) != 0) {
+        return -1;
+    }
     
     create_and_write_file(branch_fpath.c_str(), commit_hash.c_str(), 0644);
 
@@ -345,8 +348,19 @@ int vms_log() {
 }
 
 int vms_status() {
+
+    string parent_hash; 
+
+    if (get_parent_ref(parent_hash) != 0) {
+        return -1;
+    }
+
     // List what branches currently exist and mark current branch
-    string current_branch = get_branch();
+    string current_branch;
+    
+    if (get_branch(current_branch) != 0) {
+        return -1;
+    }
 
     DIR *branch_dirptr = opendir(".vms/branches");
     struct dirent *branch_entry = readdir(branch_dirptr);
@@ -395,8 +409,6 @@ int vms_status() {
     }
     cout << endl;
 
-
-
     // List all files that have been staged and have been modified since staging (and the type of modification)
     cout << "=== Unstaged Changes ===" << endl;
 
@@ -418,9 +430,10 @@ int vms_status() {
         }
     }
     // list all tracked files that have not been staged and have been modified (and the type of modification)
+
     // Load parent commit
     Commit parent_commit;
-    string parent_hash = get_parent_ref();
+
     ostringstream parent_fpath;
 
     string parent_hash_prefix;
@@ -486,7 +499,12 @@ int vms_status() {
 
 int vms_mkbranch(const char* branchname) {
     // Copy branch currently pointed to by HEAD as new branch
-    string src_path = get_branch_path();
+    string src_path;
+
+    if (get_branch_path(src_path) != 0) {
+        return -1;
+    }
+
     ostringstream dst_path;
     dst_path << ".vms/branches/" << branchname;
 

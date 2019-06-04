@@ -219,7 +219,12 @@ int main(int argc, char* argv[]) {
                     return -1;
                 }
 
-                if (strcmp(argv[3], get_branch().c_str()) == 0) {
+                string current_branch;
+                if (get_branch(current_branch) != 0) {
+                    return -1;
+                }
+
+                if (strcmp(argv[3], current_branch.c_str()) == 0) {
                     cout << "Already on branch " << argv[3] << endl;
                     return 0;
                 }
@@ -296,8 +301,13 @@ int main(int argc, char* argv[]) {
                 cout << "No branch named " << argv[2] << endl;
                 return 0;
             }
+            
+            string current_branch;
+            if (get_branch(current_branch) != 0) {
+                return -1;
+            }
 
-            if (strcmp(argv[2], get_branch().c_str()) == 0) {
+            if (strcmp(argv[2], current_branch.c_str()) == 0) {
                 cout << "Currently on branch " << argv[2] << ". Move to another branch and try again" << endl;
                 return 0;
             }

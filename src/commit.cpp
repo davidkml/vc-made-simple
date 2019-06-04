@@ -17,7 +17,12 @@ Commit::Commit() {
 Commit::Commit(const std::string& msg) {
     // Load parent commit
     Commit parent_commit;
-    std::string parent_hash = get_parent_ref();
+    std::string parent_hash;
+    if (get_parent_ref(parent_hash) != 0) {
+        std::cerr << "Fatal error occurred in constructing new commit: unable to retrieve parent commit id. .vms directory contents likely corrupted. Exiting..." << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
     std::ostringstream parent_fpath;
 
     std::string parent_hash_prefix;
