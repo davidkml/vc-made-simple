@@ -44,13 +44,14 @@ int move_from_cache_to_objects(const string& hash) {
     int ret = move_file(cache_path.str().c_str(), objects_path.str().c_str());
 
     if (ret != 0) {
-        cerr << "ERROR: Unable to move staged changes from cache to objects directory" << endl;
+        cerr << "Error occurred: unable to move staged changes from cache to objects directory" << endl;
         return -1;
     }
     // Change permissions of generated file.
     ret = chmod(objects_path.str().c_str(), 0444);
     if (ret != 0) {
-        cerr << "Failed to change permissions of file." << objects_path.str() << endl;
+        cerr << "Error occurred: unable to change permissions of blob file." << objects_path.str() << endl;
+        return -1;
     }
 
     return 0;
@@ -91,7 +92,7 @@ int restore_commit_from_shortened_id(const char* commit_id, Commit& commit) {
     return 0;
 }
 
-int restore_blob_from_id(const string& blob_id, Blob& blob) {
+int restore_blob_from_full_id(const string& blob_id, Blob& blob) {
     string blob_id_prefix;
     string blob_id_suffix;
     split_prefix_suffix(blob_id, blob_id_prefix, blob_id_suffix, PREFIX_LENGTH);
@@ -177,8 +178,6 @@ int vms_init() {
 }
 
 int vms_stage(const char* filepath) {
-    // TODO: add support for staging change to deleted file 
-    // (e.g. if previously tracked file but file now is deleted)
 
     // Load index
     map<string, string> index;  
@@ -203,7 +202,8 @@ int vms_stage(const char* filepath) {
     // Blob the file's contents and get its hash
     ifstream ifilestream(filepath);
     if (!ifilestream.is_open()) {
-        cout << "ERROR: Unable to open file" << filepath << endl;
+        cerr << "Error occurred: unable to open file " << filepath << " for staging" << endl;
+        return -1;
     }
     Blob file_blob(ifilestream);
 
@@ -213,7 +213,7 @@ int vms_stage(const char* filepath) {
     index[filepath] = file_hash;
     save< map<string, string> >(index, ".vms/index");
 
-    // Save blob in a temporary folder. This serves as cache.
+    // Save blob in cache
     ostringstream obj_cache_path;
     obj_cache_path << ".vms/cache/" << file_hash;
     save<Blob>(file_blob, obj_cache_path.str());
@@ -243,7 +243,7 @@ int vms_commit(const char* msg) {
     
     // Check if any tracked changes to commit, if not print and return, otherwise continue
     if (index.empty()) {
-        cout << "No changes staged to commit" << endl;
+        cerr << "No changes staged to commit" << endl;
         return -1;
     }
 
@@ -327,19 +327,19 @@ int vms_commit(const char* msg) {
     // Change permissions of generated file.
     int ret = chmod(obj_path.str().c_str(), 0444);
     if (ret != 0) {
-        cerr << "Failed to change permissions of file." << obj_path.str() << endl;
+        cerr << "Error occurred: failed to change permissions of commit file." << obj_path.str() << endl;
+        return -1;
     }
 
     return 0;
 }
 
 int vms_log() {
-    // TODO: Add option to print log of only top n entries
-    // Load log
+
     stack<string> log;
     restore< stack<string> >(log, ".vms/log");
     while (!log.empty()) {
-        cout << "===" << endl;
+        cout << "===\n";
         cout << log.top() << endl;
         log.pop();
     }
@@ -365,7 +365,7 @@ int vms_status() {
     DIR *branch_dirptr = opendir(".vms/branches");
     struct dirent *branch_entry = readdir(branch_dirptr);
 
-    cout << "=== Branches ===" << endl;
+    cout << "=== Branches ===\n";
 
     while (branch_entry != NULL) {
         if (strcmp(".", branch_entry->d_name) != 0 && strcmp("..", branch_entry->d_name) != 0) {
@@ -373,7 +373,7 @@ int vms_status() {
                 cout << "*";
             }
 
-            cout << branch_entry->d_name << endl;
+            cout << branch_entry->d_name << "\n";
 
         }
         
@@ -388,20 +388,22 @@ int vms_status() {
     map<string, string> index;  
     restore< map<string, string> >(index, ".vms/index");
     map<string,string>::iterator it;
-    cout << "=== Staged Files ===" << endl;
+    cout << "=== Staged Files ===\n";
 
     for (it = index.begin(); it != index.end(); ++it) {
         // if new (not currently tracked)
         if (!is_tracked_file(it->first.c_str())) {
 
-            cout << "new file:    " << it->first << endl;
+            cout << "new file:    " << it->first << "\n";
 
         } else if (it->second == DELETED_FILE) {    // if deleted (mapped to delete)
 
-            cout << "deleted:     " << it->first << endl;
+            cout << "deleted:     " << it->first << "\n";
 
         } else if (is_modified_tracked_file(it->first.c_str())) { // if modified
-            cout << "modified:    " << it->first << endl;
+
+            cout << "modified:    " << it->first << "\n";
+
         } 
 
         // Note: the order of these checks is important
@@ -410,7 +412,7 @@ int vms_status() {
     cout << endl;
 
     // List all files that have been staged and have been modified since staging (and the type of modification)
-    cout << "=== Unstaged Changes ===" << endl;
+    cout << "=== Unstaged Changes ===\n";
 
     // TODO: Improve performance of this loop.
     // TODO: Complicated logic to achieve desired behavior: simplify control logic if you can, to make things more clear.
@@ -418,14 +420,14 @@ int vms_status() {
 
         if (it->second != DELETED_FILE) {
             if (!is_valid_file(it->first.c_str())) {    // if previously staged file has been deleted, list it as deleted
-                cout << "deleted:     " << it->first << endl;
+                cout << "deleted:     " << it->first << "\n";
             } else if (!file_hash_equal_to_working_copy(it->first, it->second)) {    // if tracked file has been modified, list it as modified
-                cout << "modified:    " << it->first << endl;
+                cout << "modified:    " << it->first << "\n";
             }
 
         } else { // File staged as deleted
             if (is_valid_file(it->first.c_str())) { // if file is no longer deleted and can be staged to be added again, should notify user.. by definition, it is already tracked, so maybe check if it has changes. If so, then list it as modified... if it doesn't... then problem because can't stage if no changes to stage. Easy way around it is to remove the check before staging, but bad for performance because need to do check in status loop. But this loop is fairly small, supposedly. Okay.
-                    cout << "modified:    " << it->first << endl;
+                    cout << "modified:    " << it->first << "\n";
             }
         }
     }
@@ -451,11 +453,11 @@ int vms_status() {
         if (!is_staged_file(it->first.c_str())) {
             if (!is_valid_file(it->first.c_str())) { // unstaged tracked file has been deleted from working directory
 
-                cout << "deleted:     " << it->first << endl;
+                cout << "deleted:     " << it->first << "\n";
             
             } else if (is_modified_tracked_file(it->first.c_str())) {
             
-                cout << "modified:    " << it->first << endl;
+                cout << "modified:    " << it->first << "\n";
             
             }
         }
@@ -463,21 +465,20 @@ int vms_status() {
 
     cout << endl;
 
-    // list all deleted files that used to be tracked
     // list all untracked files in this directory
     list<string> dirs;
 
     DIR *root_dirptr = opendir(".");
     struct dirent *root_entry = readdir(root_dirptr);
 
-    cout << "=== Untracked Files ===" << endl;
+    cout << "=== Untracked Files ===\n";
 
     while (root_entry != NULL) {
         if (is_valid_dir(root_entry->d_name) && strcmp(".", root_entry->d_name) != 0 && strcmp("..", root_entry->d_name)) {
             dirs.push_back(string(root_entry->d_name));
         }
         if (is_valid_file(root_entry->d_name) && !is_tracked_file(root_entry->d_name) && !is_staged_file(root_entry->d_name)) {
-            cout << root_entry->d_name << endl;
+            cout << root_entry->d_name << "\n";
         }
         root_entry = readdir(root_dirptr);
 
@@ -485,10 +486,10 @@ int vms_status() {
 
     cout << endl;
 
-    cout << "=== Sub-directories ===" << endl;
+    cout << "=== Sub-directories ===\n";
     list<string>::iterator dirs_iter;
     for (dirs_iter = dirs.begin(); dirs_iter != dirs.end(); ++dirs_iter) {
-        cout << *dirs_iter << endl;
+        cout << *dirs_iter << "\n";
     }
 
     cout << endl;
@@ -571,7 +572,7 @@ int vms_info(const char* commit_id) {
     Commit commit;
     restore_commit_from_shortened_id(commit_id, commit);
 
-    cout << commit.log_string() << endl;
+    cout << commit.log_string() << "\n";
     cout << commit.tracked_files_string() << endl;
 
     return 0;
@@ -591,9 +592,9 @@ int vms_info(const char* commit_id, const char* filename) {
     }
 
     Blob file;
-    restore_blob_from_id(it->second, file);
+    restore_blob_from_full_id(it->second, file);
 
-    cout << "===" << endl;
+    cout << "===\n";
     cout << file.get_content() << endl;
 
     return 0;
@@ -603,8 +604,8 @@ int vms_info(const char* commit_id, const char* filename) {
 int vms_checkout_branch(const char* branchname) {
     // Ask user to verify thay want to checkout the branch.
     string input;
-    cout << "Checking out branch " << branchname << "..." << endl;
-    cout << "Warning: checking out branch will overwrite all uncommitted changes in the current branch." << endl; 
+    cout << "Checking out branch " << branchname << "...\n";
+    cout << "Warning: checking out branch will overwrite all uncommitted changes in the current branch.\n"; 
     cout << "Confirm checkout (y/n):";
     getline(cin, input);
 
@@ -649,15 +650,15 @@ int vms_checkout_files(const char* commit_id) {
     map<string, string> commit_map = commit.get_map();
 
     // Ask user to verify they want to checkout these files.
-    cout << commit.log_string() << endl;
-    cout << "Checking out files" << endl;
+    cout << commit.log_string() << "\n";
+    cout << "Checking out files\n";
     for (m_elem = commit_map.begin(); m_elem != commit_map.end(); m_elem++) {
-        cout << "    " << m_elem->first << endl;
+        cout << "    " << m_elem->first << "\n";
     }
     cout << endl;
 
     string input;
-    cout << "Warning: checking out files may overwrite uncommitted changes for these files in the working directory." << endl;
+    cout << "Warning: checking out files may overwrite uncommitted changes for these files in the working directory.\n";
     cout << "Confirm checkout (y/n):";
     getline(cin, input);
 
@@ -676,7 +677,7 @@ int vms_checkout_files(const char* commit_id) {
         create_directory_path(m_elem->first);
 
         Blob file;
-        restore_blob_from_id(m_elem->second, file);
+        restore_blob_from_full_id(m_elem->second, file);
 
         ofstream ofs(m_elem->first);
         ofs << file.get_content();
@@ -707,15 +708,15 @@ int vms_checkout_files(const char* commit_id, const int argc, char* const argv[]
 
     // Ask user to verify that they want to checkout these files.
     list<string>::iterator l_elem;
-    cout << commit.log_string() << endl;
-    cout << "Checking out files" << endl;
+    cout << commit.log_string() << "\n";
+    cout << "Checking out files\n";
     for (l_elem = found_files.begin(); l_elem != found_files.end(); l_elem++) {
-        cout << "    " << *l_elem << endl;
+        cout << "    " << *l_elem << "\n";
     }
     cout << endl;
 
     string input;
-    cout << "Warning: checking out files may overwrite uncommitted changes for these files in the working directory." << endl;
+    cout << "Warning: checking out files may overwrite uncommitted changes for these files in the working directory.\n";
     cout << "Confirm checkout (y/n):";
     getline(cin, input);
 
@@ -735,7 +736,7 @@ int vms_checkout_files(const char* commit_id, const int argc, char* const argv[]
         create_directory_path(m_elem->first);
 
         Blob file;
-        restore_blob_from_id(m_elem->second, file);
+        restore_blob_from_full_id(m_elem->second, file);
 
         ofstream ofs(m_elem->first);
         ofs << file.get_content();
