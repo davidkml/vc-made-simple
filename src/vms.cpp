@@ -124,6 +124,22 @@ int create_directory_path(string filepath) {
     return pos;
 }
 
+int get_id_from_branch(const string& branchname, string& strbuf) {
+    ostringstream branch_fpath;
+    branch_fpath << ".vms/branches/" << branchname;
+
+    ifstream branch_ifs(branch_fpath.str());
+
+    if (!branch_ifs.is_open()) {
+        cerr << "Error occurred in retrieving commit pointed to by branch: unable to open file " << branch_fpath.str() << endl;
+        return -1;
+    }
+
+    getline(branch_ifs, strbuf);
+    branch_ifs.close();
+
+    return 0;
+}
 
 int vms_init() {
 
@@ -362,12 +378,18 @@ int vms_status() {
         return -1;
     }
 
+    string branch_id;
+
+    if (get_id_from_branch(current_branch, branch_id) != 0) {
+        return -1;
+    }
+
+
     stringstream status_stream;
+    status_stream << "On branch " << current_branch.c_str() << "  [" << branch_id.substr(0,6) << "]\n";
 
     DIR *branch_dirptr = opendir(".vms/branches");
     struct dirent *branch_entry = readdir(branch_dirptr);
-
-    status_stream << "On branch " << current_branch.c_str() << "\n";
 
     bool other_branches = false;
 
@@ -382,7 +404,8 @@ int vms_status() {
                     status_stream << "\nAlternate branches:\n\n";
                 }
                 
-                status_stream << "    " << branch_entry->d_name << "\n";
+                get_id_from_branch(branch_entry->d_name, branch_id;
+                status_stream << "    " << branch_entry->d_name << "  [" << branch_id.substr(0,6) << "]\n";
 
             }
 
@@ -400,7 +423,7 @@ int vms_status() {
     map<string, string> index;  
     restore< map<string, string> >(index, ".vms/index");
     map<string,string>::iterator it;
-    
+
     bool staged_changes = false;
 
     for (it = index.begin(); it != index.end(); ++it) {
@@ -698,15 +721,10 @@ int vms_checkout_branch(const char* branchname) {
     if (input == "n") {
         return 0;
     }
-
-    ostringstream branch_fpath;
-    branch_fpath << ".vms/branches/" << branchname;
-
-    std::ifstream branch_ifs(branch_fpath.str());
-
-    std::string commit_id;
-    getline(branch_ifs, commit_id);
-    branch_ifs.close();
+    string commit_id;
+    if (get_id_from_branch(branchname, commit_id) != 0) {
+        return -1;
+    }
 
     vms_checkout_files(commit_id.c_str());
 
