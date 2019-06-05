@@ -38,7 +38,7 @@ int move_from_cache_to_objects(const string& hash) {
     split_prefix_suffix(hash, hash_prefix, hash_suffix, PREFIX_LENGTH);
 
     objects_path << ".vms/objects/" << hash_prefix;
-    make_dir(objects_path.str().c_str()); // May need some error handling code
+    mkdir(objects_path.str().c_str(), 0755);
     
     objects_path << "/" << hash_suffix;
     int ret = move_file(cache_path.str().c_str(), objects_path.str().c_str());
@@ -160,6 +160,13 @@ int get_id_from_branch(const string& branchname, string& strbuf) {
 
 int vms_init() {
 
+    char cwd_buf[PATH_MAX];
+
+    if (getcwd(cwd_buf, PATH_MAX) == NULL) {
+        cout << "Error occurred in retrieving path to current working directory: " << strerror(errno) << endl;
+        return -1;
+    }
+
     // Initialize directories
     int ret = make_dir(".vms");
     if (ret != 0) {
@@ -207,6 +214,9 @@ int vms_init() {
 
     save<Commit>(sentinal, obj_path.str());
 
+    cout << "Repository initialized at " << cwd_buf << "\n";
+    // TODO: Add basic documentation of commands here.
+
     return 0;
 }
 
@@ -229,8 +239,7 @@ int vms_stage(const char* filepath) {
         save< map<string, string> >(index, ".vms/index");
         return 0;
 
-    }
-
+    } 
 
     // Blob the file's contents and get its hash
     ifstream ifilestream(filepath);
@@ -643,6 +652,8 @@ int vms_mkbranch(const char* branchname) {
     src.close();
     dst.close();
 
+    cout << "New branch " << branchname << " created at current location " << endl;
+
     return 0;
 }
 
@@ -683,6 +694,8 @@ int vms_mkbranch(const char* branchname, const char* commit_id) {
     
     create_and_write_file(dst_path.str().c_str(), full_id.str().c_str(), 0644);
 
+    cout << "New branch " << branchname << " created at commit " << full_id.str() << endl;
+
     return 0;
 }
 
@@ -691,16 +704,16 @@ int vms_rmbranch(const char* branchname) {
     branch_path << ".vms/branches/" << branchname;
 
     remove_file(branch_path.str().c_str());
+
     return 0;
 }
 
 int vms_info(const char* commit_id) {
     Commit commit;
     restore_commit_from_shortened_id(commit_id, commit);
-
     cout << commit.log_string() << "\n";
-    cout << commit.tracked_files_string() << endl;
-
+    cout << commit.tracked_files_string() << "\n";
+    cout << "  (use \"vms info " << commit_id << " <filename>\" to inspect contents of versions tracked by this commit)" << endl;
     return 0;
 
 }
@@ -740,14 +753,17 @@ int vms_checkout_branch(const char* branchname) {
     }
 
     if (input == "n") {
-        return 0;
+        cout << "Aborting checkout..." << endl;
+        return -1;
     }
     string commit_id;
     if (get_id_from_branch(branchname, commit_id) != 0) {
         return -1;
     }
 
-    vms_checkout_files(commit_id.c_str());
+    if (vms_checkout_files(commit_id.c_str()) != 0) {
+        return -1;
+    }
 
     // check HEAD to point to this branch
     create_and_write_file(".vms/HEAD", branchname, 0644);
@@ -788,7 +804,8 @@ int vms_checkout_files(const char* commit_id) {
     }
 
     if (input == "n") {
-        return 0;
+        cout << "Aborting checkout..." << endl;
+        return -1;
     }
 
     // User answered "y", so checkout files.
@@ -846,7 +863,8 @@ int vms_checkout_files(const char* commit_id, const int argc, char* const argv[]
     }
 
     if (input == "n") {
-        return 0;
+        cout << "Aborting checkout..." << endl;
+        return -1;
     }
 
     // User answered "y", so checkout files.

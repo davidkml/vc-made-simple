@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
             cerr << "ERROR: Repository is already initialized" << endl;
             return -1;
         }
-        cout << "initializing" << endl;
+
         return vms_init();
 
     } else {
@@ -53,17 +53,14 @@ int main(int argc, char* argv[]) {
 
             if (strcmp(argv[1], "stage") == 0) {
                 for (int i = 2; i < argc; i++) {
-                    //TODO: Implement logic for stage
-                    //TODO: Clean up and refactor code for staging of directories
 
                     if (is_valid_file(argv[i])) {
                         // if argv[i] is a valid file, then normalize it
                         if (normalize_relative_filepath(argv[i], norm_filepath) != 0) { // Error, most likely given file not in cwd or its subdirectories 
-                            cout << argv[i] << " not staged" << endl;
                             continue;
                         }
                     } else {
-                        // if argv[i] is an invalid file or it is a directory, then copy it into normalized and do nothing
+                        // if argv[i] is an invalid file or it is a directory, then copy it into norm_filepath and do nothing
                         strcpy(norm_filepath, argv[i]);
                     }
 
@@ -85,7 +82,6 @@ int main(int argc, char* argv[]) {
                             // This means can still stage files that don't exist (e.g. deleted files)
                             if (is_valid_file(dir_filename)) {
                                 if (normalize_relative_filepath(dir_filename, norm_dir_filename) != 0) { // Error, most likely given file not in cwd or its subdirectories 
-                                cout << dir_filename << " not staged" << endl;
                                 entry = readdir(dirptr);
                                 continue;
                                 }
@@ -96,7 +92,6 @@ int main(int argc, char* argv[]) {
 
                             if (is_valid_file(norm_dir_filename) || is_tracked_file(norm_dir_filename) || is_staged_file(norm_dir_filename)) {
 
-                                cout << "Staging file " << norm_dir_filename << endl;
                                 vms_stage(norm_dir_filename);
 
                             }
@@ -107,7 +102,6 @@ int main(int argc, char* argv[]) {
                         // need to normalize before check. How would you do this? The issue is deleted files.
                     }else if (is_valid_file(norm_filepath) || is_tracked_file(norm_filepath) || is_staged_file(norm_filepath)) {
 
-                        cout << "Staging file " << norm_filepath << endl;
                         vms_stage(norm_filepath);
 
                     } else {
@@ -119,16 +113,14 @@ int main(int argc, char* argv[]) {
 
             } else { // argv[1] == unstage 
                 for (int i = 2; i < argc; i++) {
-                    //TODO: Implement logic for unstage
 
                     if (is_valid_file(argv[i])) {
                         // if argv[i] is a valid file, then normalize it
-                        if (normalize_relative_filepath(argv[i], norm_filepath) != 0) { // Error, most likely given file not in cwd or its subdirectories 
-                            cout << argv[i] << " not staged" << endl;
+                        if (normalize_relative_filepath(argv[i], norm_filepath) != 0) { // Error, most likely given file not in cwd or its subdirectories: file will not be unstaged
                             continue;
                         }
                     } else {
-                        // if argv[i] is an invalid file or it is a directory, then copy it into normalized and do nothing
+                        // if argv[i] is an invalid file or it is a directory, then copy it into norm_filepath and do nothing
                         strcpy(norm_filepath, argv[i]);
                     }
 
@@ -149,8 +141,7 @@ int main(int argc, char* argv[]) {
 
                             // Normalize file if it is valid, otherwise 
                             if (is_valid_file(dir_filename)) {
-                                if (normalize_relative_filepath(dir_filename, norm_dir_filename) != 0) { // Error, most likely given file not in cwd or its subdirectories 
-                                cout << dir_filename << " not staged" << endl;
+                                if (normalize_relative_filepath(dir_filename, norm_dir_filename) != 0) { // Error, most likely given file not in cwd or its subdirectories: file will not be unstaged
                                 entry = readdir(dirptr);
                                 continue;
                                 }
@@ -161,7 +152,6 @@ int main(int argc, char* argv[]) {
 
                             if (is_staged_file(norm_dir_filename)) {
 
-                                cout << "Unstaging file " << norm_dir_filename << endl;
                                 vms_unstage(norm_dir_filename);
 
                             }
@@ -172,10 +162,9 @@ int main(int argc, char* argv[]) {
 
                     } else if (is_staged_file(norm_filepath)) {
 
-                        cout << "Unstaging file " << norm_filepath << endl;
                         vms_unstage(norm_filepath);
                     } else {
-                        cout << "ERROR No file named " << norm_filepath << "currently being tracked" << endl;
+                        cerr << "No file named " << norm_filepath << " currently staged for commit" << endl;
                     }
                 }
                 return 0;
@@ -187,19 +176,15 @@ int main(int argc, char* argv[]) {
                 //TODO: add help text and usage
                 return -1;
             }
-            //TODO: Implement logic for commit
-            //TODO: Add more options and checks
-            cout << "Committing with message: " << argv[2] << endl;
+
             return vms_commit(argv[2]);
             
         } else if (strcmp(argv[1], "log") == 0) {
-            // TODO: Implement logic for log and more options and checks
-            cout << "Printing log of commits" << endl;
+
             return vms_log();
 
         } else if (strcmp(argv[1], "status") == 0) {
-            // TODO: Implement logic for status
-            cout << "Printing repository status" << endl;
+
             return vms_status();
 
         } else if (strcmp(argv[1], "checkout") == 0) {
@@ -229,7 +214,6 @@ int main(int argc, char* argv[]) {
                     return 0;
                 }
                 
-                cout << "Now on branch " << argv[3] << endl;
                 return vms_checkout_branch(argv[3]);
                 
             } else if (strcmp(argv[2], "files") == 0) {
@@ -246,11 +230,13 @@ int main(int argc, char* argv[]) {
                 // Check that files have been provided
 
                 if (argc == 4) { // Check out all files in the commit
-                    cout << "Checking out all files from commit " << argv[3] << endl;
+
                     return vms_checkout_files(argv[3]);
+
                 } else { // files given
-                    cout << "Checking out files" << endl;
+
                     return vms_checkout_files(argv[3], argc, argv);
+
                 }
 
                 return 0;
@@ -267,12 +253,12 @@ int main(int argc, char* argv[]) {
             }
 
             if (is_valid_branch(argv[2])) {
-                cout << "branch " << argv[2] << "already exists. Use checkout to move to it" << endl;
+                cout << "Branch " << argv[2] << " already exists.\n";
+                cout << "  (use \"vms checkout branch " << argv[2] << "\" to move to it)" << endl;
                 return 0;
             }
 
             if (argc == 3) { // no commit_id provided, so make branch at current commit
-                cout << "Creating branch " << argv[2] << " at current location " << endl;
                 return vms_mkbranch(argv[2]);
 
             } else { // provided commitid to create branch at
@@ -280,7 +266,6 @@ int main(int argc, char* argv[]) {
                     cerr << "ERROR: Branch not created. Ambiguous or no matching commit id provided" << endl;
                     return -1;
                 }
-                cout << "Creating branch " << argv[2] << " at commit " << argv[3] << endl;
                 return vms_mkbranch(argv[2], argv[3]);
             }
 
@@ -308,11 +293,11 @@ int main(int argc, char* argv[]) {
             }
 
             if (strcmp(argv[2], current_branch.c_str()) == 0) {
-                cout << "Currently on branch " << argv[2] << ". Move to another branch and try again" << endl;
+                cout << "Currently on branch " << argv[2] << "\n";
+                cout << "  (use \"vms checkout branch <branchname>...\" to move to another branch and try again)" << endl;
                 return 0;
             }
 
-            cout << "Removing branch " << argv[2] << endl;
             return vms_rmbranch(argv[2]);
 
         } else if (strcmp(argv[1], "info") == 0) {
@@ -322,17 +307,16 @@ int main(int argc, char* argv[]) {
             }
 
             if (!is_valid_commit_id(argv[2])) {
-                cout << "ERROR: Ambiguous or no matching commit id provided" << endl;
+                cerr << "ERROR: Ambiguous or no matching commit id provided" << endl;
                 return -1;
             }
             if (argc == 3) {
-                cout << "Printing info for commit " << argv[2] << endl;
                 return vms_info(argv[2]);
 
             } else if (argc == 4) { // provided file argument as well.
                 return vms_info(argv[2], argv[3]);
             } else {
-                cout << "Only one file argument allowed. Usage:" << endl;
+                cerr << "Only one file argument allowed. Usage:" << endl;
             }
         }
         // More commands on the way
