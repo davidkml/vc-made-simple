@@ -291,8 +291,8 @@ int vms_commit(const char* msg) {
 
     // Create new commit, update its internal map, and move files from cache to objects directory
     Commit commit(msg);
-    cout << "commit before adding new elements" << endl;
-    commit.print();
+    // cout << "commit before adding new elements" << endl;
+    // commit.print();
 
     set<string> uuid_set;     // Create set to track which uuids have been seen before so don't try to move twice
     pair<set<string>::iterator,bool> insert_ret;
@@ -310,8 +310,8 @@ int vms_commit(const char* msg) {
             }
         }
     }
-    cout << "commit after adding new elements" << endl;
-    commit.print();
+    // cout << "commit after adding new elements" << endl;
+    // commit.print();
 
 
     // Iterate through cache directory, clearing it

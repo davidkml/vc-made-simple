@@ -22,14 +22,15 @@ void remove_trailing_slash(char* dirpath) {
 int main(int argc, char* argv[]) {
 
     if (argc < 2) {
-        cerr << "Usage: " <<  argv[0] << " <command> [<args>]" << endl;
-        //TODO: Improve and add help text
+        fprintf(stderr, "usage: %s <command> [<args>]\n", argv[0]);
+        //TODO: Add output of summary documentation of commands
         return -1;
     }
 
     if(strcmp(argv[1], "init") == 0) {
         if(is_initialized()) {
-            cerr << "ERROR: Repository is already initialized" << endl;
+            fprintf(stderr, "Repository is already initialized\n"
+                            "  (type \"%s\" in command prompt to display a summary of available commands)\n", argv[0]);
             return -1;
         }
 
@@ -37,15 +38,15 @@ int main(int argc, char* argv[]) {
 
     } else {
         if (!is_initialized()) {
-            cerr << "ERROR: Repository not initialized" << endl;
-            //TODO: add help text
+            fprintf(stderr, "Repository is not initialized\n"
+                            "  (use \"%s init\" to initialize repository)\n", argv[0]);
             return -1;
         }
 
         if (strcmp(argv[1], "stage") == 0 || strcmp(argv[1], "unstage") == 0) {
             if (argc < 3) {
-                cerr << "ERROR: Need a file name" << endl;
-                // TODO: add help text
+                fprintf(stderr, "Must provide filenames or directories\n"
+                                "usage: %s %s [<filenames>] [<dirnames>]\n", argv[0], argv[1]);
                 return -1;
             }
             
@@ -105,7 +106,7 @@ int main(int argc, char* argv[]) {
                         vms_stage(norm_filepath);
 
                     } else {
-                        cerr << norm_filepath << " is not a valid or currently tracked file or directory." << endl;
+                        fprintf(stderr, "%s is not a valid or currently tracked file or directory\n", norm_filepath);
                     }
                 }
 
@@ -164,7 +165,7 @@ int main(int argc, char* argv[]) {
 
                         vms_unstage(norm_filepath);
                     } else {
-                        cerr << "No file named " << norm_filepath << " currently staged for commit" << endl;
+                        fprintf(stderr, "No file named %s is currently staged for commit\n", norm_filepath);
                     }
                 }
                 return 0;
@@ -172,8 +173,9 @@ int main(int argc, char* argv[]) {
 
         } else if (strcmp(argv[1], "commit") == 0) {
             if (argc < 3) {
-                cerr << "ERROR: Need a commit message" << endl;
-                //TODO: add help text and usage
+                fprintf(stderr, "Must provide a message with your commit\n"
+                                "usage: %s %s <message>\n", argv[0], argv[1]);
+
                 return -1;
             }
 
@@ -189,18 +191,23 @@ int main(int argc, char* argv[]) {
 
         } else if (strcmp(argv[1], "checkout") == 0) {
             if (argc < 3) {
-                cerr << "Usage: " << endl;
+                fprintf(stderr, "Must specify whether checkout branch or files\n"
+                                "usage: %s %s branch <branchname>\n"
+                                "usage: %s %s files <commitid> [filenames]\n", argv[0], argv[1], argv[0], argv[1]);
                 return -1;
             }
 
             if (strcmp(argv[2], "branch") == 0) {
                 if (argc < 4) {
-                    cerr << "ERROR: Must provide branch name" << endl;
+                    fprintf(stderr, "Must provide name of branch to checkout\n"
+                                    "usage: %s %s %s <branchname>\n", argv[0], argv[1], argv[2]);
+
                     return -1;
                 }
 
                 if (!is_valid_branch(argv[3])) {
-                    cerr << "ERROR: There is no branch named " << argv[3] << endl;
+                    fprintf(stderr, "There is no branch named \"%s\"\n"
+                                    "  (use \"%s status\" to see list of available branches)\n", argv[3], argv[0]);
                     return -1;
                 }
 
@@ -210,7 +217,7 @@ int main(int argc, char* argv[]) {
                 }
 
                 if (strcmp(argv[3], current_branch.c_str()) == 0) {
-                    cout << "Already on branch " << argv[3] << endl;
+                    fprintf(stdout, "Already on branch %s\n", argv[3]);
                     return 0;
                 }
                 
@@ -218,12 +225,15 @@ int main(int argc, char* argv[]) {
                 
             } else if (strcmp(argv[2], "files") == 0) {
                 if (argc < 4) {
-                    cerr << "ERROR: Must provide commit id and files. Usage:" << endl;
+                    fprintf(stderr, "Must provide id of commit to checkout and optionally files\n"
+                                    "usage: %s %s %s <commitid> [filenames]\n", argv[0], argv[1], argv[2]);
                     return -1;
                 }
 
                 if (!is_valid_commit_id(argv[3])) {
-                    cerr << "ERROR: Ambiguous or no matching commit id provided" << endl;
+                    fprintf(stderr, "Provided commit id \"%s\" generated ambiguous or no matches\n"
+                                    "Please provide more characters or verify the accuracy of your input\n"
+                                    "  (use \"%s log\" to see log of commits)\n", argv[3], argv[0]);
                     return -1;
                 }
 
@@ -242,19 +252,24 @@ int main(int argc, char* argv[]) {
                 return 0;
 
             } else {
-                cerr << "Must checkout branch or checkout files. Usage:" << endl;
+                fprintf(stderr, "Must specify whether checkout branch or files\n"
+                                "usage: %s %s branch <branchname>\n"
+                                "usage: %s %s files <commitid> [filenames]\n", argv[0], argv[1], argv[0], argv[1]);
                 return -1;
             }
             
         } else if (strcmp(argv[1], "mkbranch") == 0) {
             if (argc < 3) {
-                cerr << "ERROR: Must provide name of branch to create" << endl;
+                fprintf(stderr, "Must provide name of branch to create and optionally the id of commit to create it at\n"
+                                "usage: %s %s <branchname> [commitid]\n", argv[0], argv[1]);
+
                 return -1;
             }
 
             if (is_valid_branch(argv[2])) {
-                cout << "Branch " << argv[2] << " already exists.\n";
-                cout << "  (use \"vms checkout branch " << argv[2] << "\" to move to it)" << endl;
+                fprintf(stderr, "Branch \"%s\" already exists\n"
+                                "  (use \"%s checkout branch %s\" to move to it)\n", argv[2], argv[0], argv[2]);
+
                 return 0;
             }
 
@@ -263,7 +278,11 @@ int main(int argc, char* argv[]) {
 
             } else { // provided commitid to create branch at
                 if (!is_valid_commit_id(argv[3])) {
-                    cerr << "ERROR: Branch not created. Ambiguous or no matching commit id provided" << endl;
+                    fprintf(stderr, "Branch not created\n" 
+                                    "Provided commit id \"%s\" generated ambiguous or no matches\n"
+                                    "Please provide more characters or verify the accuracy of your input\n"
+                                    "  (use \"%s log\" to see log of commits)\n", argv[3], argv[0]);
+
                     return -1;
                 }
                 return vms_mkbranch(argv[2], argv[3]);
@@ -273,17 +292,21 @@ int main(int argc, char* argv[]) {
 
         } else if (strcmp(argv[1], "rmbranch") == 0) {
             if (argc < 3) {
-                cerr << "ERROR: Must provide name of branch to remove" << endl;
+                fprintf(stderr, "Must provide name of branch to remove\n"
+                                "usage: %s %s <branchname>\n", argv[0], argv[1]);
+
                 return -1;
             }
 
             if (strcmp(argv[2], "master") == 0) {
-                cerr << "ERROR: Master branch cannot be removed" << endl;
+                fprintf(stderr, "Master branch cannot be removed\n");
                 return -1;
             }
 
             if (!is_valid_branch(argv[2])) {
-                cout << "No branch named " << argv[2] << endl;
+                fprintf(stderr, "No branch named \"%s\"\n"
+                                "  (use \"%s status\" to see list of available branches)\n", argv[2], argv[0]);
+
                 return 0;
             }
             
@@ -293,8 +316,8 @@ int main(int argc, char* argv[]) {
             }
 
             if (strcmp(argv[2], current_branch.c_str()) == 0) {
-                cout << "Currently on branch " << argv[2] << "\n";
-                cout << "  (use \"vms checkout branch <branchname>...\" to move to another branch and try again)" << endl;
+                fprintf(stderr, "Currently on branch %s\n"
+                                "  (use \"%s checkout branch <branchname>\" to move to another branch and try again)\n", argv[2], argv[0]);
                 return 0;
             }
 
@@ -302,12 +325,15 @@ int main(int argc, char* argv[]) {
 
         } else if (strcmp(argv[1], "info") == 0) {
             if (argc < 3) {
-                cerr << "ERROR: Must provide name of commit to look up" << endl;
+                fprintf(stderr, "Must provide name of commit to look up and optionally a filename\n"
+                                "usage: %s %s <commitid> [filename]\n", argv[0], argv[1]);
                 return -1;
             }
 
             if (!is_valid_commit_id(argv[2])) {
-                cerr << "ERROR: Ambiguous or no matching commit id provided" << endl;
+                fprintf(stderr, "Provided commit id \"%s\" generated ambiguous or no matches\n"
+                                "Please provide more characters or verify the accuracy of your input\n"
+                                "  (use \"%s log\" to see log of commits)\n", argv[2], argv[0]);
                 return -1;
             }
             if (argc == 3) {
@@ -316,7 +342,8 @@ int main(int argc, char* argv[]) {
             } else if (argc == 4) { // provided file argument as well.
                 return vms_info(argv[2], argv[3]);
             } else {
-                cerr << "Only one file argument allowed. Usage:" << endl;
+                fprintf(stderr, "May only provide a single filename argument\n"
+                                "usage: %s %s <commitid> [filename]\n", argv[0], argv[1]);
             }
         }
         // More commands on the way
