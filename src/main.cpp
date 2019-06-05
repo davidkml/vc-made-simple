@@ -187,7 +187,7 @@ int main(int argc, char* argv[]) {
 
         } else if (strcmp(argv[1], "status") == 0) {
 
-            return vms_status();
+            return vms_status(argv[0]);
 
         } else if (strcmp(argv[1], "checkout") == 0) {
             if (argc < 3) {
@@ -345,6 +345,9 @@ int main(int argc, char* argv[]) {
                 fprintf(stderr, "May only provide a single filename argument\n"
                                 "usage: %s %s <commitid> [filename]\n", argv[0], argv[1]);
             }
+        } else {
+            fprintf(stderr, "Unknown command: \'%s %s\'\n"
+                            "  (type \"%s\" in command prompt to display a summary of available commands)\n", argv[0], argv[1], argv[0]);
         }
         // More commands on the way
     }

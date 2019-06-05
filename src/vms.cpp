@@ -389,7 +389,7 @@ int vms_log() {
     return 0;
 }
 
-int vms_status() {
+int vms_status(const char* arg0) {
 
     string parent_hash; 
 
@@ -459,8 +459,8 @@ int vms_status() {
             if (!staged_changes) {
                 staged_changes = true;
                 status_stream << "Changes staged for commit\n";
-                status_stream << "  (use \"vms unstage <file>...\" to unstage changes to file)\n";
-                status_stream << "  (use \"vms commit <message>...\" to commit all staged changes)\n\n";
+                status_stream << "  (use \"" << arg0 << " unstage <file>\" to unstage changes to file)\n";
+                status_stream << "  (use \"" << arg0 << " commit <message>\" to commit all staged changes)\n\n";
             }
 
             status_stream << "    new file:    " << it->first << "\n";
@@ -470,8 +470,8 @@ int vms_status() {
             if (!staged_changes) {
                 staged_changes = true;
                 status_stream << "Changes staged for commit\n";
-                status_stream << "  (use \"vms unstage <file>...\" to unstage changes to file)\n";
-                status_stream << "  (use \"vms commit <message>...\" to commit all staged changes)\n\n";
+                status_stream << "  (use \"" << arg0 << " unstage <file>\" to unstage changes to file)\n";
+                status_stream << "  (use \"" << arg0 << " commit <message>\" to commit all staged changes)\n\n";
             }
 
             status_stream << "    deleted:     " << it->first << "\n";
@@ -481,8 +481,8 @@ int vms_status() {
             if (!staged_changes) {
                 staged_changes = true;
                 status_stream << "Changes staged for commit\n";
-                status_stream << "  (use \"vms unstage <file>...\" to unstage changes to file)\n";
-                status_stream << "  (use \"vms commit <message>...\" to commit all staged changes)\n\n";
+                status_stream << "  (use \"" << arg0 << " unstage <file>\" to unstage changes to file)\n";
+                status_stream << "  (use \"" << arg0 << " commit <message>\" to commit all staged changes)\n\n";
             }
 
             status_stream << "    modified:    " << it->first << "\n";
@@ -510,7 +510,7 @@ int vms_status() {
                 if (!unstaged_changes) {
                     unstaged_changes = true;
                     status_stream << "Changes not yet staged for commit:\n";
-                    status_stream << "  (use \"vms stage <file>...\" to update or stage changes to be committed)\n\n";
+                    status_stream << "  (use \"" << arg0 << " stage <file>\" to update or stage changes to be committed)\n\n";
                 }
 
                 status_stream << "    deleted:     " << it->first << "\n";
@@ -518,7 +518,7 @@ int vms_status() {
                 if (!unstaged_changes) {
                     unstaged_changes = true;
                     status_stream << "Changes not yet staged for commit:\n";
-                    status_stream << "  (use \"vms stage <file>...\" to update or stage changes to be committed)\n\n";
+                    status_stream << "  (use \"" << arg0 << " stage <file>\" to update or stage changes to be committed)\n\n";
                 }
 
                 status_stream << "    modified:    " << it->first << "\n";
@@ -529,7 +529,7 @@ int vms_status() {
                 if (!unstaged_changes) {
                     unstaged_changes = true;
                     status_stream << "Changes not yet staged for commit:\n";
-                    status_stream << "  (use \"vms stage <file>...\" to update or stage changes to be committed)\n\n";
+                    status_stream << "  (use \"" << arg0 << " stage <file>\" to update or stage changes to be committed)\n\n";
                 }
 
                 status_stream << "    modified:    " << it->first << "\n";
@@ -566,7 +566,7 @@ int vms_status() {
                 if (!unstaged_changes) {
                     unstaged_changes = true;
                     status_stream << "Changes not yet staged for commit:\n";
-                    status_stream << "  (use \"vms stage <file>...\" to update or stage changes to be committed)\n\n";
+                    status_stream << "  (use \"" << arg0 << " stage <file>\" to update or stage changes to be committed)\n\n";
                 }
 
                 status_stream << "    deleted:     " << it->first << "\n";
@@ -575,7 +575,7 @@ int vms_status() {
                 if (!unstaged_changes) {
                     unstaged_changes = true;
                     status_stream << "Changes not yet staged for commit:\n";
-                    status_stream << "  (use \"vms stage <file>...\" to update or stage changes to be committed)\n\n";
+                    status_stream << "  (use \"" << arg0 << " stage <file>\" to update or stage changes to be committed)\n\n";
                 }
 
                 status_stream << "    modified:    " << it->first << "\n";
@@ -606,7 +606,7 @@ int vms_status() {
             if (!untracked_files) {
                 untracked_files = true;
                 status_stream << "Untracked files:\n";
-                status_stream << "  (use \"vms stage <file>...\" to include file to be committed and tracked)\n\n";
+                status_stream << "  (use \"" << arg0 << " stage <file>\" to include file to be committed and tracked)\n\n";
             }
             status_stream << "    " << root_entry->d_name << "\n";
         }
@@ -713,7 +713,6 @@ int vms_info(const char* commit_id) {
     restore_commit_from_shortened_id(commit_id, commit);
     cout << commit.log_string() << "\n";
     cout << commit.tracked_files_string() << "\n";
-    cout << "  (use \"vms info " << commit_id << " <filename>\" to inspect contents of versions tracked by this commit)" << endl;
     return 0;
 
 }

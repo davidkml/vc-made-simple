@@ -11,7 +11,7 @@ int vms_commit(const char* msg);
 
 int vms_log();
 
-int vms_status();
+int vms_status(const char* arg0);
 
 int vms_mkbranch(const char* branchname);
 
