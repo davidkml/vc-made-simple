@@ -345,6 +345,30 @@ int main(int argc, char* argv[]) {
                 fprintf(stderr, "May only provide a single filename argument\n"
                                 "usage: %s %s <commitid> [filename]\n", argv[0], argv[1]);
             }
+        } else if (strcmp(argv[1], "merge") == 0) {
+            if (argc < 3) {
+                fprintf(stderr, "Must provide name of branch to merge into current branch\n"
+                                "usage: %s %s <branchname>\n", argv[0], argv[1]);
+                return -1;
+            }
+
+            string current_branch;
+            if (get_branch(current_branch) != 0) {
+                return -1;
+            }
+
+            if (strcmp(argv[2], current_branch.c_str()) == 0) {
+                fprintf(stderr, "Currently on branch %s: cannot merge a branch with itself\n", argv[2]);
+                return -1;
+            }
+
+            if (!is_valid_branch(argv[2])) {
+                fprintf(stderr, "No branch named \"%s\"\n", argv[2]);
+                return -1;
+            }
+
+            return vms_merge(argv[2], current_branch.c_str());
+
         } else {
             fprintf(stderr, "Unknown command: \'%s %s\'\n"
                             "  (type \"%s\" in command prompt to display a summary of available commands)\n", argv[0], argv[1], argv[0]);

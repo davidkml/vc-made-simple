@@ -882,3 +882,7 @@ int vms_checkout_files(const char* commit_id, const int argc, char* const argv[]
     return 0;
 
 }
+
+int vms_merge(const char* given_branch, const char* current_branch) {
+    return 0;
+}

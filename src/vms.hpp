@@ -29,4 +29,6 @@ int vms_checkout_files(const char* commit_id);
 
 int vms_checkout_files(const char* commit_id, const int argc, char* const argv[]);
 
+int vms_merge(const char* given_branch, const char* current_branch);
+
 #endif // VMS_HPP
