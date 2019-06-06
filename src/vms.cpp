@@ -417,33 +417,30 @@ int vms_status(const char* arg0) {
     DIR *branch_dirptr = opendir(".vms/branches");
     struct dirent *branch_entry = readdir(branch_dirptr);
 
-    bool other_branches = false;
+    set<string> branches;
 
     while (branch_entry != NULL) {
 
         if (strcmp(".", branch_entry->d_name) != 0 && strcmp("..", branch_entry->d_name) != 0) {
 
             if (strcmp(current_branch.c_str(), branch_entry->d_name) != 0) {
-                
-                if (!other_branches) {
-                    other_branches = true;
-                    status_stream << "\nAlternate branches:\n\n";
-                }
-
-                get_id_from_branch(branch_entry->d_name, branch_id);
-                status_stream << "    " << branch_entry->d_name << "  [" << branch_id.substr(0,6) << "]\n";
-
+                branches.insert(string(branch_entry->d_name));
             }
 
         }
-        
         branch_entry = readdir(branch_dirptr);
-
     }
-    if (other_branches) {
+
+    set<string>::iterator ss_iter;
+    
+    if (!branches.empty()) {
+        status_stream << "\nOther branches:\n";
+        for (ss_iter = branches.begin(); ss_iter != branches.end(); ss_iter++) {
+            get_id_from_branch(*ss_iter, branch_id);
+            status_stream << "    " << *ss_iter << "  [" << branch_id.substr(0,6) << "]\n";
+        }
         status_stream << endl;
     }
-
 
     // List all files currently staged. (and list type of modification: modified, deleted)
     map<string, string> index;  
@@ -591,39 +588,41 @@ int vms_status(const char* arg0) {
     }
 
     // list all untracked files in this directory
-    list<string> dirs;
+    set<string> dirs;
+    set<string> ut_files;
 
     DIR *root_dirptr = opendir(".");
     struct dirent *root_entry = readdir(root_dirptr);
 
-    bool untracked_files = false;
 
     while (root_entry != NULL) {
         if (is_valid_dir(root_entry->d_name) && strcmp(".", root_entry->d_name) != 0 && strcmp("..", root_entry->d_name) != 0 && strcmp(".vms", root_entry->d_name) != 0) {
-            dirs.push_back(string(root_entry->d_name));
-        }
-        if (is_valid_file(root_entry->d_name) && !is_tracked_file(root_entry->d_name) && !is_staged_file(root_entry->d_name)) {
-            if (!untracked_files) {
-                untracked_files = true;
-                status_stream << "Untracked files:\n";
-                status_stream << "  (use \"" << arg0 << " stage <file>\" to include file to be committed and tracked)\n\n";
-            }
-            status_stream << "    " << root_entry->d_name << "\n";
+
+            dirs.insert(string(root_entry->d_name));
+        
+        } else if (is_valid_file(root_entry->d_name) && !is_tracked_file(root_entry->d_name) && !is_staged_file(root_entry->d_name)) {
+        
+            ut_files.insert(string(root_entry->d_name));
+        
         }
         root_entry = readdir(root_dirptr);
 
     }
 
-    if (untracked_files) {
+    if (!ut_files.empty()) {
+        status_stream << "Untracked files:\n";
+        status_stream << "  (use \"" << arg0 << " stage <file>\" to include file to be committed and tracked)\n\n";
+        for (ss_iter = ut_files.begin(); ss_iter != ut_files.end(); ss_iter++) {
+            status_stream << "    " << *ss_iter << "\n";
+        }
         status_stream << endl;
     }
 
 
     if (!dirs.empty()) {
         status_stream << "Sub-directories:\n";
-        list<string>::iterator dirs_iter;
-        for (dirs_iter = dirs.begin(); dirs_iter != dirs.end(); ++dirs_iter) {
-            status_stream << "    " << *dirs_iter << "/\n";
+        for (ss_iter = dirs.begin(); ss_iter != dirs.end(); ss_iter++) {
+            status_stream << "    " << *ss_iter << "/\n";
         }
         status_stream << endl;
     }
