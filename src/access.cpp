@@ -245,6 +245,24 @@ int get_parent_ref(string& strbuf) {
     return 0;
 }
 
+int get_id_from_branch(const string& branchname, string& strbuf) {
+    ostringstream branch_fpath;
+    branch_fpath << ".vms/branches/" << branchname;
+
+    ifstream branch_ifs(branch_fpath.str());
+
+    if (!branch_ifs.is_open()) {
+        cerr << "Error occurred in retrieving commit pointed to by branch: unable to open file " << branch_fpath.str() << endl;
+        return -1;
+    }
+
+    getline(branch_ifs, strbuf);
+    branch_ifs.close();
+
+    return 0;
+}
+
+
 int split_prefix_suffix(const std::string& str, std::string& prefix, std::string& suffix, int n) {
     if (n > str.length() - 1) {
         return -1;
