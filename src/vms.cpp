@@ -26,7 +26,7 @@
 
 using namespace std;
 
-const string DELETED_FILE = "DELETED";
+const string STAGE_DELETE = "DELETED";
 
 enum RelativeFileStatus {
     NEW,
@@ -359,7 +359,7 @@ int vms_stage(const char* filepath) {
     // if file was previously being tracked but is now deleted
     if(is_tracked_file(filepath) && !is_valid_file(filepath)) {
         // Puts filepath into index map with special string, save the updated index, and return
-        index[filepath] = DELETED_FILE;
+        index[filepath] = STAGE_DELETE;
         save< map<string, string> >(index, ".vms/index");
         return 0;
         
@@ -429,8 +429,8 @@ int vms_commit(const char* msg) {
 
     map<string,string>::iterator it;
     for (it=index.begin(); it!=index.end(); ++it) {
-        // if staged is file mapped to DELETED_FILE string, remove it from commit tree
-        if (it->second == DELETED_FILE) {
+        // if staged is file mapped to STAGE_DELETE string, remove it from commit tree
+        if (it->second == STAGE_DELETE) {
             commit.remove_from_map(it->first);
         } else { // puts entry to commit map and move files from cache to objects directory
             commit.put_to_map(it->first, it->second);
@@ -592,7 +592,7 @@ int vms_status(const char* arg0) {
 
             status_stream << "    new file:    " << it->first << "\n";
 
-        } else if (it->second == DELETED_FILE) {    // if deleted (mapped to delete)
+        } else if (it->second == STAGE_DELETE) {    // if deleted (mapped to delete)
             
             if (!staged_changes) {
                 staged_changes = true;
@@ -631,7 +631,7 @@ int vms_status(const char* arg0) {
     bool unstaged_changes = false;
     for (it = index.begin(); it != index.end(); ++it) {
 
-        if (it->second != DELETED_FILE) {
+        if (it->second != STAGE_DELETE) {
 
             if (!is_valid_file(it->first.c_str())) {    // if previously staged file has been deleted, list it as deleted
                 if (!unstaged_changes) {
@@ -1077,6 +1077,11 @@ int vms_merge(const char* given_branch, const char* current_branch) {
         files_union.insert(map_it->first);
     }
 
+    // load index and clear it
+    map<string, string> index;  
+    restore< map<string, string> >(index, ".vms/index");
+    index.clear();
+
     RelativeFileStatus given_status;
     RelativeFileStatus current_status;
 
@@ -1090,15 +1095,32 @@ int vms_merge(const char* given_branch, const char* current_branch) {
              (given_status == MODIFIED && current_status == UNMODIFIED) ) {
             
             cout << "Case 1" << endl;
+            // Case 1: Check out file into current directory and add file to staging area (for commit at end)
+            map_it = given_map.find(*files_it);
+            create_directory_path(map_it->first);
+
+            Blob file;
+            restore_blob_from_full_id(map_it->second, file);
+
+            ofstream ofs(map_it->first);
+            ofs << file.get_content();
+            ofs.close();
+
+            index[map_it->first] = map_it->second;
+
         } else if ( (current_status == NEW && given_status == NOT_FOUND) ||
                     (current_status == MODIFIED && given_status == DELETED) ||
                     (current_status == MODIFIED && given_status == UNMODIFIED) ) {
-            
+
+            // Case 2: Do nothing: no need to check out or update because already in current directory and tracking
+
             cout << "Case 2" << endl;
         } else {  // Case 3
 
             if (given_status == DELETED && current_status == UNMODIFIED) {
                 cout << "Case 3: Remove file from tracking condition" << endl;
+                // Stage file to be deleted
+                index[*files_it] = STAGE_DELETE;
 
             } else if (current_status == DELETED && given_status == UNMODIFIED) {
                 cout << "Case 3: Do nothing condition" << endl;
@@ -1106,12 +1128,100 @@ int vms_merge(const char* given_branch, const char* current_branch) {
             } else if (given_status == DELETED && current_status == DELETED) {
                 cout << "Case 3: Both deleted, do nothing" << endl;
 
-            } else {  // otherwise, exist in both: either unmodified/unmodified, modified/modified, or new/new: check equality and merge if not equal
-                cout << "Case 3: Check equality" << endl;
+            } else if (given_status == UNMODIFIED && current_status == UNMODIFIED) {
+                cout << "Case 3: Both unmodified, do nothing" << endl;
 
+            } else {  // otherwise, exist in both: either modified/modified or new/new: check equality and merge if not equal
+                cout << "Case 3: Check equality" << endl;
+                // Check equality: if equal, then do nothing. Move on to next file. If not, then merge conflict.
+                map_it = given_map.find(*files_it);
+                string given_ver_id = map_it->second;
+
+                map_it = current_map.find(*files_it);
+                string current_ver_id = map_it->second;
+
+                if (given_ver_id != current_ver_id) {
+                    cout << "Merge conflict for file " << *files_it << ": please resolve and commit resolved changes" << endl;
+                    // Overwrite file in current directory with formatted and add file to staging area (for commit at end)
+
+                create_directory_path(*files_it);
+
+                Blob given_ver_file;
+                restore_blob_from_full_id(given_ver_id, given_ver_file);
+
+                Blob current_ver_file;
+                restore_blob_from_full_id(current_ver_id, current_ver_file);
+
+                ofstream ofs(*files_it);
+                ofs << "<<<<<<< version: " << current_branch << "\n";
+                ofs << current_ver_file.get_content() << "\n";
+                ofs << "=======\n";
+                ofs << given_ver_file.get_content() << "\n";
+                ofs << ">>>>>>> version: " << given_branch << endl;
+
+                ofs.close();
+
+                index[map_it->first] = map_it->second;
+
+                }
             }
 
         }
+    }
+
+
+
+    
+
+    // Create new child commit using current branch as first parent and template
+    ostringstream message;
+    message << "Merged branch " << given_branch << " into branch " << current_branch;
+    Commit child_commit(message.str());
+    child_commit.set_second_parent(given_branch_id);
+
+    // Update with index.
+    for (map_it=index.begin(); map_it!=index.end(); map_it++) {
+        // if staged is file mapped to STAGE_DELETE string, remove it from commit tree
+        if (map_it->second == STAGE_DELETE) {
+            child_commit.remove_from_map(map_it->first);
+        } else { // puts entry to commit map
+            child_commit.put_to_map(map_it->first, map_it->second);
+        }
+    }
+
+    // Clear index and save it back;
+    index.clear();
+    save< map<string, string> >(index, ".vms/index");
+
+    // Update commit pointed to by current branch
+    string child_commit_hash = child_commit.hash();
+    create_and_write_file(current_branch_fpath.c_str(), child_commit_hash.c_str(), 0644);
+
+    //Push formatted commit string to log and save
+    stack<string> log;
+    restore< stack<string> >(log, ".vms/log");
+
+    log.push(child_commit.log_string());
+    save< stack<string> >(log, ".vms/log");
+
+    // Serialize and save your commit.
+    ostringstream obj_path;
+
+    string child_commit_hash_prefix;
+    string child_commit_hash_suffix;
+    split_prefix_suffix(child_commit_hash, child_commit_hash_prefix, child_commit_hash_suffix, PREFIX_LENGTH);
+
+    obj_path << ".vms/objects/" << child_commit_hash_prefix;
+    make_dir(obj_path.str().c_str());
+    obj_path << "/" << child_commit_hash_suffix;
+
+    save<Commit>(child_commit, obj_path.str());
+
+    // Change permissions of generated file.
+    int ret = chmod(obj_path.str().c_str(), 0444);
+    if (ret != 0) {
+        cerr << "Error occurred: failed to change permissions of commit file." << obj_path.str() << endl;
+        return -1;
     }
 
     return 0;
