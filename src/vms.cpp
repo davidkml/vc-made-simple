@@ -1084,23 +1084,35 @@ int vms_merge(const char* given_branch, const char* current_branch) {
         given_status = find_relative_file_status(*files_it, given_map, split_map);
         current_status = find_relative_file_status(*files_it, current_map, split_map);
         cout << *files_it << "- given status: " << given_status << ", current status: " << current_status << endl;
-    }
 
-    // /** Desired Behavior
-    //  * Cases:
-    //  * 1) (if <file> in GIVEN's map has been modified compared to SPLIT's version of <file> (or if <file> present in GIVEN and not in SPLIT) )
-    //  *    AND (if CURRENT's version of <file> has NOT been modified compared to SPLIT's version of <file? (or <file> is not present in CURRENT) ) 
-    //  *    THEN <file> will be "checked out" into the current directory and <file> will be added to the index (to be committed at the end) 
-    //  *    (file will not be considered for merge conflicts)
-    //  * 
-    //  * 2) (if <file> in CURRENT's map has been modified compared to SPLIT's version of <file> (or if <file> present in CURRENT and not in SPLIT) )
-    //  *    AND (if GIVEN's version of <file> has NOT been modified compared to SPLIT's version of <file> (or <file> is not present in GIVEN) )
-    //  *    THEN leave <file> alone (it will not be considered for merge conflicts)
-    //  * 
-    //  * 3) else, <file> has been modified in both GIVEN and CURRENT compared to SPLIT's version:
-    //  *    if <file> in GIVEN and CURRENT is identical (has same hash/id), then no conflict, continue to next file
-    //  *    otherwise, merge conflict. 
-    // */
+        if ( (given_status == NEW && current_status == NOT_FOUND) || 
+             (given_status == MODIFIED && current_status == DELETED) || 
+             (given_status == MODIFIED && current_status == UNMODIFIED) ) {
+            
+            cout << "Case 1" << endl;
+        } else if ( (current_status == NEW && given_status == NOT_FOUND) ||
+                    (current_status == MODIFIED && given_status == DELETED) ||
+                    (current_status == MODIFIED && given_status == UNMODIFIED) ) {
+            
+            cout << "Case 2" << endl;
+        } else {  // Case 3
+
+            if (given_status == DELETED && current_status == UNMODIFIED) {
+                cout << "Case 3: Remove file from tracking condition" << endl;
+
+            } else if (current_status == DELETED && given_status == UNMODIFIED) {
+                cout << "Case 3: Do nothing condition" << endl;
+
+            } else if (given_status == DELETED && current_status == DELETED) {
+                cout << "Case 3: Both deleted, do nothing" << endl;
+
+            } else {  // otherwise, exist in both: either unmodified/unmodified, modified/modified, or new/new: check equality and merge if not equal
+                cout << "Case 3: Check equality" << endl;
+
+            }
+
+        }
+    }
 
     return 0;
 }
