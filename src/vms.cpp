@@ -980,10 +980,68 @@ int vms_checkout_files(const char* commit_id, const int argc, char* const argv[]
 
 int vms_merge(const char* given_branch, const char* current_branch) {
 
-    string split_point;
+    string split_id;
+    string given_branch_id;
+    string current_branch_id;
 
-    find_split_point(string(given_branch), string(current_branch), split_point);
+    find_split_point(string(given_branch), string(current_branch), split_id);
+    cout << "split point: " << split_id << endl;
 
-    cout << "split_point: " << split_point << endl;
+    get_id_from_branch(given_branch, given_branch_id);
+    get_id_from_branch(current_branch, current_branch_id);
+
+    if (split_id == given_branch_id) { // Given branch is a direct ancestor of current branch, so do nothing
+        cout << "Not necessary to merge. Given branch is direct ancestor of current branch" << endl;
+        return 0;
+    }
+
+    string current_branch_fpath;
+    if (get_branch_path(current_branch_fpath) != 0) {
+        return -1;
+    }
+
+    if (split_id == current_branch_id) { // Current branch is a direct ancestor of given branch, so fast forward merge
+        cout << "Current branch " << current_branch << " is a direct ancestor of given branch " << given_branch << "\n";
+        cout << "Fast-forward merging branch " << current_branch <<  " into branch " << given_branch << endl;
+        
+        // Update current branch to point to commit pointed to by given branch (fast forward)
+        create_and_write_file(current_branch_fpath.c_str(), given_branch_id.c_str(), 0644);
+        return 0;
+    }
+
+    // Otherwise, perform merge
+
+    // Load all commits:
+    Commit given_commit;
+    Commit current_commit;
+    Commit split_commit;
+
+    restore_commit_from_shortened_id(given_branch_id.c_str(), given_commit);
+    restore_commit_from_shortened_id(current_branch_id.c_str(), current_commit);
+    restore_commit_from_shortened_id(split_id.c_str(), split_commit);
+
+    map<string, string> given_map = given_commit.get_map();
+    map<string, string> current_map = current_commit.get_map();
+    map<string, string> split_map = split_commit.get_map();
+
+    map<string, string>::iterator it;
+
+    /** Desired Behavior
+     * Cases:
+     * 1) (if <file> in GIVEN's map has been modified compared to SPLIT's version of <file> (or if <file> present in GIVEN and not in SPLIT) )
+     *    AND (if CURRENT's version of <file> has NOT been modified compared to SPLIT's version of <file? (or <file> is not present in CURRENT) ) 
+     *    THEN <file> will be "checked out" into the current directory and <file> will be added to the index (to be committed at the end) 
+     *    (file will not be considered for merge conflicts)
+     * 
+     * 2) (if <file> in CURRENT's map has been modified compared to SPLIT's version of <file> (or if <file> present in CURRENT and not in SPLIT) )
+     *    AND (if GIVEN's version of <file> has NOT been modified compared to SPLIT's version of <file> (or <file> is not present in GIVEN) )
+     *    THEN leave <file> alone (it will not be considered for merge conflicts)
+     * 
+     * 3) else, <file> has been modified in both GIVEN and CURRENT compared to SPLIT's version:
+     *    if <file> in GIVEN and CURRENT is identical (has same hash/id), then no conflict
+     *    otherwise, merge conflict. 
+    */
+
+
     return 0;
 }
