@@ -28,6 +28,14 @@ using namespace std;
 
 const string DELETED_FILE = "DELETED";
 
+enum RelativeFileStatus {
+    NEW,
+    MODIFIED,
+    UNMODIFIED,
+    DELETED,
+    NOT_FOUND
+};
+
 int move_from_cache_to_objects(const string& hash) {
     ostringstream cache_path;
     cache_path << ".vms/cache/" << hash;
@@ -251,6 +259,33 @@ int find_split_point(const string& branch_A, const string& branch_B, string& str
 
     return 0;
 
+}
+
+RelativeFileStatus find_relative_file_status(string filename, const map<string, string>& x, const map<string, string>& ref) {
+    map<string, string>::const_iterator x_entry = x.find(filename);
+    map<string, string>::const_iterator ref_entry = ref.find(filename);
+
+    bool present_in_x = x_entry != x.end();
+    bool present_in_ref = ref_entry != ref.end();
+
+    if (present_in_x && !present_in_ref) {
+        return NEW;
+    }
+
+    if (!present_in_x && present_in_ref) {
+        return DELETED;
+    }
+
+    if (present_in_x && present_in_ref) {
+        if (x_entry->second == ref_entry->second) {
+            return UNMODIFIED;
+        }
+
+        return MODIFIED;
+
+    }
+
+    return NOT_FOUND;
 }
 
 int vms_init() {
@@ -1024,24 +1059,48 @@ int vms_merge(const char* given_branch, const char* current_branch) {
     map<string, string> current_map = current_commit.get_map();
     map<string, string> split_map = split_commit.get_map();
 
-    map<string, string>::iterator it;
+    map<string, string>::iterator map_it;
 
-    /** Desired Behavior
-     * Cases:
-     * 1) (if <file> in GIVEN's map has been modified compared to SPLIT's version of <file> (or if <file> present in GIVEN and not in SPLIT) )
-     *    AND (if CURRENT's version of <file> has NOT been modified compared to SPLIT's version of <file? (or <file> is not present in CURRENT) ) 
-     *    THEN <file> will be "checked out" into the current directory and <file> will be added to the index (to be committed at the end) 
-     *    (file will not be considered for merge conflicts)
-     * 
-     * 2) (if <file> in CURRENT's map has been modified compared to SPLIT's version of <file> (or if <file> present in CURRENT and not in SPLIT) )
-     *    AND (if GIVEN's version of <file> has NOT been modified compared to SPLIT's version of <file> (or <file> is not present in GIVEN) )
-     *    THEN leave <file> alone (it will not be considered for merge conflicts)
-     * 
-     * 3) else, <file> has been modified in both GIVEN and CURRENT compared to SPLIT's version:
-     *    if <file> in GIVEN and CURRENT is identical (has same hash/id), then no conflict
-     *    otherwise, merge conflict. 
-    */
+    // add all tracked files to a iterable set
+    set<string> files_union;
+    set<string>::iterator files_it;
 
+    for (map_it = given_map.begin(); map_it != given_map.end(); map_it++) {
+        files_union.insert(map_it->first);
+    }
+
+    for (map_it = current_map.begin(); map_it != current_map.end(); map_it++) {
+        files_union.insert(map_it->first);
+    }
+
+    for (map_it = split_map.begin(); map_it != split_map.end(); map_it++) {
+        files_union.insert(map_it->first);
+    }
+
+    RelativeFileStatus given_status;
+    RelativeFileStatus current_status;
+
+    for (files_it = files_union.begin(); files_it != files_union.end(); files_it++) {
+        given_status = find_relative_file_status(*files_it, given_map, split_map);
+        current_status = find_relative_file_status(*files_it, current_map, split_map);
+        cout << *files_it << "- given status: " << given_status << ", current status: " << current_status << endl;
+    }
+
+    // /** Desired Behavior
+    //  * Cases:
+    //  * 1) (if <file> in GIVEN's map has been modified compared to SPLIT's version of <file> (or if <file> present in GIVEN and not in SPLIT) )
+    //  *    AND (if CURRENT's version of <file> has NOT been modified compared to SPLIT's version of <file? (or <file> is not present in CURRENT) ) 
+    //  *    THEN <file> will be "checked out" into the current directory and <file> will be added to the index (to be committed at the end) 
+    //  *    (file will not be considered for merge conflicts)
+    //  * 
+    //  * 2) (if <file> in CURRENT's map has been modified compared to SPLIT's version of <file> (or if <file> present in CURRENT and not in SPLIT) )
+    //  *    AND (if GIVEN's version of <file> has NOT been modified compared to SPLIT's version of <file> (or <file> is not present in GIVEN) )
+    //  *    THEN leave <file> alone (it will not be considered for merge conflicts)
+    //  * 
+    //  * 3) else, <file> has been modified in both GIVEN and CURRENT compared to SPLIT's version:
+    //  *    if <file> in GIVEN and CURRENT is identical (has same hash/id), then no conflict, continue to next file
+    //  *    otherwise, merge conflict. 
+    // */
 
     return 0;
 }
