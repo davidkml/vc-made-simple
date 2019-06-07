@@ -1015,6 +1015,26 @@ int vms_checkout_files(const char* commit_id, const int argc, char* const argv[]
 
 int vms_merge(const char* given_branch, const char* current_branch) {
 
+    // Ask user confirmation before merging
+    string input;
+    cout << "Merging branch " << given_branch << " into branch " << current_branch << "...\n\n";
+
+    cout << "Warning: merging will clear the staging area and may overwrite uncommitted changes for files in the working directory\n";
+    cout << "If you have uncommitted changes you would like to keep, please commit before proceeding with merge\n\n";
+    cout << "Confirm merge (y/n):";
+    getline(cin, input);
+
+    while (input != "y" && input != "n") {
+        cout << "Please enter y or n:";
+        getline(cin, input);
+    }
+
+    if (input == "n") {
+        cout << "Aborting merge..." << endl;
+        return -1;
+    }
+
+
     string split_id;
     string given_branch_id;
     string current_branch_id;
@@ -1175,7 +1195,7 @@ int vms_merge(const char* given_branch, const char* current_branch) {
 
     // Create new child commit using current branch as first parent and template
     ostringstream message;
-    message << "Merged branch " << given_branch << " into branch " << current_branch;
+    message << "Merge branch " << given_branch << " into branch " << current_branch;
     Commit child_commit(message.str());
     child_commit.set_second_parent(given_branch_id);
 
