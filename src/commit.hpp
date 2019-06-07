@@ -20,6 +20,7 @@ class Commit {
         std::string hash();
         std::string log_string();
         std::string tracked_files_string();
+        std::pair<std::string, std::string> parent_ids();
         void print(); // delete after testing
         std::map<std::string, std::string> get_map();
         bool map_contains(const std::string& key);

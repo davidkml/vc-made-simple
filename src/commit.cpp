@@ -88,6 +88,15 @@ std::string Commit::tracked_files_string() {
     return oss.str();
 }
 
+std::pair<std::string, std::string> Commit::parent_ids() {
+    std::pair<std::string, std::string> parents;
+
+    parents.first = first_parent_ref;
+    parents.second = second_parent_ref;
+
+    return parents;
+}
+
 std::map<std::string, std::string> Commit::get_map() {
     return file_to_hash;
 }

@@ -6,8 +6,10 @@
 #include <boost/serialization/map.hpp>
 
 #include <set>
+#include <unordered_set>
 #include <list>
 #include <stack>
+#include <queue>
 #include <boost/serialization/deque.hpp>
 #include <boost/serialization/stack.hpp>
 
@@ -139,6 +141,112 @@ int create_directory_path(string filepath) {
         }
     }
     return pos;
+}
+
+ 
+int find_split_point(const string& branch_A, const string& branch_B, string& strbuf) {
+    /** Design notes:
+     * Algorithm using breadth-first search to find split point, ending as soon as common ancestor is found. Finds split point closest relative to both sources.
+     * This algorithm does not guarantee it will identify one source as a direct ancestor of the other (e.g. opportunity for fast-forward merge).
+     * To achieve this alternative result, may implement algorithm that searches the entire commit graph which is considerably more costly.
+     * 
+     * Cases in which this algorithm will find "suboptimal" split point are expected to be relatively uncommon, so this partial search is sufficient in most cases.
+     * In cases for which "suboptimal" split points are found, it may result in "false positive" merge conflicts.
+    */
+
+    string id_A;
+    string id_B;
+
+    if (get_id_from_branch(branch_A, id_A) != 0) {
+        return -1;
+    }
+
+    if (get_id_from_branch(branch_B, id_B) != 0) {
+        return -1;
+    }
+
+    if (id_A == id_B) { // both branches point to same commit, so trivially found
+        strbuf = id_A;
+        return 0;
+    }
+
+    unordered_set<string> seen_A;
+    unordered_set<string> seen_B;
+    unordered_set<string> seen_union;
+    queue<string> fringe;
+    pair<unordered_set<string>::iterator,bool> ret;
+
+    seen_A.insert(id_A);
+    seen_B.insert(id_B);
+    seen_union.insert(id_A);
+    seen_union.insert(id_B);
+    fringe.push(id_A);
+    fringe.push(id_B);
+
+    string current_id;
+    Commit current_commit;
+    pair<string, string> parents;
+
+    while (!fringe.empty()) {
+        current_id = fringe.front();
+        fringe.pop();
+
+        restore_commit_from_shortened_id(current_id.c_str(), current_commit);
+        
+        parents = current_commit.parent_ids();
+
+        if (seen_A.find(current_id) != seen_A.end()) {  // if current id was first seen from source A
+
+            if (!parents.first.empty() && seen_A.insert(parents.first).second) { // if first parent is not empty string and has not been seen before from source A (side effect: adds to seem_A if true: not seen before, does nothing if has seen before)
+
+                fringe.push(parents.first);
+                ret = seen_union.insert(parents.first);
+
+                if (!ret.second) {  // if ret.second == false, then insertion failed. Found split point. break and return.
+                    strbuf = parents.first;
+                    break;
+                }
+
+            } else if (!parents.second.empty() && seen_A.insert(parents.second).second) {
+
+                fringe.push(parents.second);
+                ret = seen_union.insert(parents.second);
+
+                if (!ret.second) {
+                    strbuf = parents.second;
+                    break;
+                }
+            }
+
+        } else {  // current id was first seen from source B
+
+            if (!parents.first.empty() && seen_B.insert(parents.first).second) { // if first parent is not empty string and has not been seen before from source A (side effect: adds to seem_A if true: not seen before, does nothing if has seen before)
+
+                fringe.push(parents.first);
+                ret = seen_union.insert(parents.first);
+
+                if (!ret.second) {  // if ret.second == false, then insertion failed. Found split point. break and return.
+                    strbuf = parents.first;
+                    break;
+                }
+
+            } else if (!parents.second.empty() && seen_B.insert(parents.second).second) {
+
+                fringe.push(parents.second);
+                ret = seen_union.insert(parents.second);
+
+                if (!ret.second) {
+                    strbuf = parents.second;
+                    break;
+                }
+            }
+
+
+        }
+    }
+
+    return 0;
+
 }
 
 int vms_init() {
@@ -867,5 +975,12 @@ int vms_checkout_files(const char* commit_id, const int argc, char* const argv[]
 }
 
 int vms_merge(const char* given_branch, const char* current_branch) {
+
+    string split_point;
+
+    find_split_point(string(given_branch), string(current_branch), split_point);
+
+    cout << "split_point: " << split_point << endl;
+     
     return 0;
 }
