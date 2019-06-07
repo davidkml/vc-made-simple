@@ -124,6 +124,10 @@ void Commit::remove_from_map(const std::string& key) {
     file_to_hash.erase(key);
 }
 
+void Commit::set_second_parent(const std::string& commit_id) {
+    second_parent_ref = commit_id;
+}
+
 void Commit::print() {
     char* dt = ctime(&datetime);
     std::cout << "Time: " << dt;

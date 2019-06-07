@@ -207,7 +207,9 @@ int find_split_point(const string& branch_A, const string& branch_B, string& str
                     break;
                 }
 
-            } else if (!parents.second.empty() && seen_A.insert(parents.second).second) {
+            } 
+            
+            if (!parents.second.empty() && seen_A.insert(parents.second).second) {
 
                 fringe.push(parents.second);
                 ret = seen_union.insert(parents.second);
@@ -220,7 +222,7 @@ int find_split_point(const string& branch_A, const string& branch_B, string& str
 
         } else {  // current id was first seen from source B
 
-            if (!parents.first.empty() && seen_B.insert(parents.first).second) { // if first parent is not empty string and has not been seen before from source A (side effect: adds to seem_A if true: not seen before, does nothing if has seen before)
+            if (!parents.first.empty() && seen_B.insert(parents.first).second) { // if first parent is not empty string and has not been seen before from source B (side effect: adds to seem_B if true: not seen before, does nothing if has seen before)
 
                 fringe.push(parents.first);
                 ret = seen_union.insert(parents.first);
@@ -230,7 +232,9 @@ int find_split_point(const string& branch_A, const string& branch_B, string& str
                     break;
                 }
 
-            } else if (!parents.second.empty() && seen_B.insert(parents.second).second) {
+            } 
+            
+            if (!parents.second.empty() && seen_B.insert(parents.second).second) {
 
                 fringe.push(parents.second);
                 ret = seen_union.insert(parents.second);
@@ -981,6 +985,5 @@ int vms_merge(const char* given_branch, const char* current_branch) {
     find_split_point(string(given_branch), string(current_branch), split_point);
 
     cout << "split_point: " << split_point << endl;
-     
     return 0;
 }
