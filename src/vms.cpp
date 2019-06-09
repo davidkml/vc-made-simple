@@ -345,7 +345,6 @@ int vms_init() {
     save<Commit>(sentinal, obj_path.str());
 
     cout << "Repository initialized at " << cwd_buf << "\n";
-    // TODO: Add basic documentation of commands here.
 
     return 0;
 }
@@ -408,7 +407,6 @@ int vms_unstage(const char* filepath) {
 }
 
 int vms_commit(const char* msg) {
-    // TODO: Fix and be more rigorous with error handling and propagation
     // Load index
     map<string, string> index;  
     restore< map<string, string> >(index, ".vms/index");
@@ -616,7 +614,7 @@ int vms_status(const char* arg0) {
 
         } 
 
-        // Note: the order of these checks is important
+        // Note: the order of these checks is important; checks not mutually exclusive 
         
     }
     if (staged_changes) {
@@ -626,7 +624,6 @@ int vms_status(const char* arg0) {
     // List all files that have been staged and have been modified since staging (and the type of modification)
 
     // TODO: Improve performance of this loop.
-    // TODO: Complicated logic to achieve desired behavior: simplify control logic if you can, to make things more clear.
 
     bool unstaged_changes = false;
     for (it = index.begin(); it != index.end(); ++it) {
@@ -652,7 +649,7 @@ int vms_status(const char* arg0) {
             }
 
         } else { // File staged as deleted
-            if (is_valid_file(it->first.c_str())) { // if file is no longer deleted and can be staged to be added again, should notify user.. by definition, it is already tracked, so maybe check if it has changes. If so, then list it as modified... if it doesn't... then problem because can't stage if no changes to stage. Easy way around it is to remove the check before staging, but bad for performance because need to do check in status loop. But this loop is fairly small, supposedly. Okay.
+            if (is_valid_file(it->first.c_str())) { // if file is no longer deleted and can be staged to be added again, should notify user. By definition, file staged to be deleted from tracking is already tracked, so check if it has changes. If so, then list it as modified
                 if (!unstaged_changes) {
                     unstaged_changes = true;
                     status_stream << "Changes not yet staged for commit:\n";
@@ -1040,7 +1037,6 @@ int vms_merge(const char* given_branch, const char* current_branch) {
     string current_branch_id;
 
     find_split_point(string(given_branch), string(current_branch), split_id);
-    cout << "split point: " << split_id << endl;
 
     get_id_from_branch(given_branch, given_branch_id);
     get_id_from_branch(current_branch, current_branch_id);
@@ -1108,13 +1104,11 @@ int vms_merge(const char* given_branch, const char* current_branch) {
     for (files_it = files_union.begin(); files_it != files_union.end(); files_it++) {
         given_status = find_relative_file_status(*files_it, given_map, split_map);
         current_status = find_relative_file_status(*files_it, current_map, split_map);
-        cout << *files_it << "- given status: " << given_status << ", current status: " << current_status << endl;
 
         if ( (given_status == NEW && current_status == NOT_FOUND) || 
              (given_status == MODIFIED && current_status == DELETED) || 
              (given_status == MODIFIED && current_status == UNMODIFIED) ) {
             
-            cout << "Case 1" << endl;
             // Case 1: Check out file into current directory and add file to staging area (for commit at end)
             map_it = given_map.find(*files_it);
             create_directory_path(map_it->first);
@@ -1138,21 +1132,23 @@ int vms_merge(const char* given_branch, const char* current_branch) {
         } else {  // Case 3
 
             if (given_status == DELETED && current_status == UNMODIFIED) {
-                cout << "Case 3: Remove file from tracking condition" << endl;
-                // Stage file to be deleted
+                // Change in given branch and no change in current branch
+                // Stage file to be deleted in current branch
                 index[*files_it] = STAGE_DELETE;
 
             } else if (current_status == DELETED && given_status == UNMODIFIED) {
-                cout << "Case 3: Do nothing condition" << endl;
+                // Change in current branch and no change in given branch
+                // Do nothing
 
             } else if (given_status == DELETED && current_status == DELETED) {
-                cout << "Case 3: Both deleted, do nothing" << endl;
+                // Both deleted
+                // Do nothing
 
             } else if (given_status == UNMODIFIED && current_status == UNMODIFIED) {
-                cout << "Case 3: Both unmodified, do nothing" << endl;
+                // Both unmodified
+                // Do nothing
 
             } else {  // otherwise, exist in both: either modified/modified or new/new: check equality and merge if not equal
-                cout << "Case 3: Check equality" << endl;
                 // Check equality: if equal, then do nothing. Move on to next file. If not, then merge conflict.
                 map_it = given_map.find(*files_it);
                 string given_ver_id = map_it->second;
