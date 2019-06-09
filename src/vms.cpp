@@ -1128,7 +1128,6 @@ int vms_merge(const char* given_branch, const char* current_branch) {
 
             // Case 2: Do nothing: no need to check out or update because already in current directory and tracking
 
-            cout << "Case 2" << endl;
         } else {  // Case 3
 
             if (given_status == DELETED && current_status == UNMODIFIED) {
@@ -1160,24 +1159,46 @@ int vms_merge(const char* given_branch, const char* current_branch) {
                     cout << "Merge conflict for file " << *files_it << ": please resolve and commit resolved changes" << endl;
                     // Overwrite file in current directory with formatted and add file to staging area (for commit at end)
 
-                create_directory_path(*files_it);
+                    create_directory_path(*files_it);
 
-                Blob given_ver_file;
-                restore_blob_from_full_id(given_ver_id, given_ver_file);
+                    Blob given_ver_file;
+                    restore_blob_from_full_id(given_ver_id, given_ver_file);
 
-                Blob current_ver_file;
-                restore_blob_from_full_id(current_ver_id, current_ver_file);
+                    Blob current_ver_file;
+                    restore_blob_from_full_id(current_ver_id, current_ver_file);
 
-                ofstream ofs(*files_it);
-                ofs << "<<<<<<< version: " << current_branch << "\n";
-                ofs << current_ver_file.get_content() << "\n";
-                ofs << "=======\n";
-                ofs << given_ver_file.get_content() << "\n";
-                ofs << ">>>>>>> version: " << given_branch << endl;
+                    ofstream ofs(*files_it);
+                    ofs << "<<<<<<< version: " << current_branch << "\n";
+                    ofs << current_ver_file.get_content() << "\n";
+                    ofs << "=======\n";
+                    ofs << given_ver_file.get_content() << "\n";
+                    ofs << ">>>>>>> version: " << given_branch << endl;
 
-                ofs.close();
+                    ofs.close();
 
-                index[map_it->first] = map_it->second;
+                    // blob the new file contents and save it.
+                    ifstream ifs(*files_it);
+                    if (!ifs.is_open()) {
+                        cerr << "Error occurred: unable to open file " << *files_it << " for staging" << endl;
+                        return -1;
+                    }
+                    Blob merged_file(ifs);
+
+                    string merged_file_hash = merged_file.hash();
+
+                    // Puts filepath and hash into the index map and save the updated index
+                    index[*files_it] = merged_file_hash;
+
+                    string merged_file_hash_prefix;
+                    string merged_file_hash_suffix;
+
+                    split_prefix_suffix(merged_file_hash, merged_file_hash_prefix, merged_file_hash_suffix, PREFIX_LENGTH);
+                    // Save blob in objects
+                    ostringstream obj_path;
+                    obj_path << ".vms/objects/" << merged_file_hash_prefix;
+                    mkdir(obj_path.str().c_str(), 0755);
+                    obj_path << "/" << merged_file_hash_suffix;
+                    save<Blob>(merged_file, obj_path.str());
 
                 }
             }
@@ -1185,9 +1206,6 @@ int vms_merge(const char* given_branch, const char* current_branch) {
         }
     }
 
-
-
-    
 
     // Create new child commit using current branch as first parent and template
     ostringstream message;
