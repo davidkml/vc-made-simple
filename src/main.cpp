@@ -298,11 +298,6 @@ int main(int argc, char* argv[]) {
                 return -1;
             }
 
-            if (strcmp(argv[2], "master") == 0) {
-                fprintf(stderr, "Master branch cannot be removed\n");
-                return -1;
-            }
-
             if (!is_valid_branch(argv[2])) {
                 fprintf(stderr, "No branch named \"%s\"\n"
                                 "  (use \"%s status\" to see list of available branches)\n", argv[2], argv[0]);
