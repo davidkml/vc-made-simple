@@ -1068,22 +1068,32 @@ int vms_merge(const char* given_branch, const char* current_branch) {
 
     map<string, string>::iterator map_it;
 
+    stringstream updated_files;
+    updated_files << "Updated files:\n";
+
     if (split_id == current_branch_id) { // Current branch is a direct ancestor of given branch, so fast forward merge
         cout << "\nCurrent branch " << current_branch << " is a direct ancestor of given branch " << given_branch << "\n";
         cout << "Fast-forward merging branch " << current_branch <<  " into branch " << given_branch << endl;
         
-        // Update files in current working directory with versions in given commit
+        // Update files in current working directory with versions in given commit if modified or new, relative to current commit's version.
 
         for (map_it = given_map.begin(); map_it != given_map.end(); map_it++) {
+
+            RelativeFileStatus rfs = find_relative_file_status(map_it->first, given_map, current_map);
             
-            create_directory_path(map_it->first);
+            if (rfs == NEW || rfs == MODIFIED) {
+                create_directory_path(map_it->first);
 
-            Blob file;
-            restore_blob_from_full_id(map_it->second, file);
+                Blob file;
+                restore_blob_from_full_id(map_it->second, file);
 
-            ofstream ofs(map_it->first);
-            ofs << file.get_content();
-            ofs.close();
+                ofstream ofs(map_it->first);
+                ofs << file.get_content();
+                ofs.close();
+
+                updated_files << "    " << map_it->first << "\n";
+            }
+            
 
         }
 
@@ -1095,6 +1105,8 @@ int vms_merge(const char* given_branch, const char* current_branch) {
         restore< map<string, string> >(index, ".vms/index");
         index.clear();
         save< map<string, string> >(index, ".vms/index");
+
+        cout << updated_files.rdbuf() << endl;
 
         return 0;
     }
@@ -1145,6 +1157,8 @@ int vms_merge(const char* given_branch, const char* current_branch) {
             ofs.close();
 
             index[map_it->first] = map_it->second;
+
+            updated_files << "    " << map_it-> first << "\n";
 
         } else if ( (current_status == NEW && given_status == NOT_FOUND) ||
                     (current_status == MODIFIED && given_status == DELETED) ||
@@ -1224,6 +1238,8 @@ int vms_merge(const char* given_branch, const char* current_branch) {
                     obj_path << "/" << merged_file_hash_suffix;
                     save<Blob>(merged_file, obj_path.str());
 
+                    updated_files << "    " << map_it->first << "\n";
+
                 }
             }
 
@@ -1281,6 +1297,8 @@ int vms_merge(const char* given_branch, const char* current_branch) {
         cerr << "Error occurred: failed to change permissions of commit file." << obj_path.str() << endl;
         return -1;
     }
+
+    cout << updated_files.rdbuf() << endl;
 
     return 0;
 }
