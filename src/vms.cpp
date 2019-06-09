@@ -1042,22 +1042,13 @@ int vms_merge(const char* given_branch, const char* current_branch) {
     get_id_from_branch(current_branch, current_branch_id);
 
     if (split_id == given_branch_id) { // Given branch is a direct ancestor of current branch, so do nothing
-        cout << "Not necessary to merge. Given branch is direct ancestor of current branch" << endl;
+        cout << "\nNot necessary to merge. Given branch is direct ancestor of current branch" << endl;
         return 0;
     }
 
     string current_branch_fpath;
     if (get_branch_path(current_branch_fpath) != 0) {
         return -1;
-    }
-
-    if (split_id == current_branch_id) { // Current branch is a direct ancestor of given branch, so fast forward merge
-        cout << "Current branch " << current_branch << " is a direct ancestor of given branch " << given_branch << "\n";
-        cout << "Fast-forward merging branch " << current_branch <<  " into branch " << given_branch << endl;
-        
-        // Update current branch to point to commit pointed to by given branch (fast forward)
-        create_and_write_file(current_branch_fpath.c_str(), given_branch_id.c_str(), 0644);
-        return 0;
     }
 
     // Otherwise, perform merge
@@ -1076,6 +1067,39 @@ int vms_merge(const char* given_branch, const char* current_branch) {
     map<string, string> split_map = split_commit.get_map();
 
     map<string, string>::iterator map_it;
+
+    if (split_id == current_branch_id) { // Current branch is a direct ancestor of given branch, so fast forward merge
+        cout << "\nCurrent branch " << current_branch << " is a direct ancestor of given branch " << given_branch << "\n";
+        cout << "Fast-forward merging branch " << current_branch <<  " into branch " << given_branch << endl;
+        
+        // Update files in current working directory with versions in given commit
+
+        for (map_it = given_map.begin(); map_it != given_map.end(); map_it++) {
+            
+            create_directory_path(map_it->first);
+
+            Blob file;
+            restore_blob_from_full_id(map_it->second, file);
+
+            ofstream ofs(map_it->first);
+            ofs << file.get_content();
+            ofs.close();
+
+        }
+
+        // Update current branch to point to commit pointed to by given branch (fast forward)   
+        create_and_write_file(current_branch_fpath.c_str(), given_branch_id.c_str(), 0644);
+
+        // Load index, clear it, and save it back
+        map<string, string> index;  
+        restore< map<string, string> >(index, ".vms/index");
+        index.clear();
+        save< map<string, string> >(index, ".vms/index");
+
+        return 0;
+    }
+
+    // Otherwise, standard merge
 
     // add all tracked files to a iterable set
     set<string> files_union;
@@ -1156,7 +1180,7 @@ int vms_merge(const char* given_branch, const char* current_branch) {
                 string current_ver_id = map_it->second;
 
                 if (given_ver_id != current_ver_id) {
-                    cout << "Merge conflict for file " << *files_it << ": please resolve and commit resolved changes" << endl;
+                    cout << "\nMerge conflict for file " << *files_it << ": please resolve and commit resolved changes" << endl;
                     // Overwrite file in current directory with formatted and add file to staging area (for commit at end)
 
                     create_directory_path(*files_it);
