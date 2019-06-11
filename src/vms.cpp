@@ -36,28 +36,28 @@ enum RelativeFileStatus {
     NOT_FOUND
 };
 
-int move_from_cache_to_objects(const string& hash) {
+int move_from_cache_to_objects(const string& id) {
     ostringstream cache_path;
-    cache_path << ".vms/cache/" << hash;
+    cache_path << ".vms/cache/" << id;
 
     // Create subdirectory if it does not already exist and move
     ostringstream objects_path;
 
-    string hash_prefix;
-    string hash_suffix;
-    split_prefix_suffix(hash, hash_prefix, hash_suffix, PREFIX_LENGTH);
+    string id_prefix;
+    string id_suffix;
+    split_prefix_suffix(id, id_prefix, id_suffix, PREFIX_LENGTH);
 
-    objects_path << ".vms/objects/" << hash_prefix;
+    objects_path << ".vms/objects/" << id_prefix;
     mkdir(objects_path.str().c_str(), 0755);
     
-    objects_path << "/" << hash_suffix;
+    objects_path << "/" << id_suffix;
     int ret = move_file(cache_path.str().c_str(), objects_path.str().c_str());
 
     if (ret != 0) {
         cerr << "Error occurred: unable to move staged changes from cache to objects directory" << endl;
         return -1;
     }
-    // Change permissions of generated file.
+
     ret = chmod(objects_path.str().c_str(), 0444);
     if (ret != 0) {
         cerr << "Error occurred: unable to change permissions of blob file." << objects_path.str() << endl;
@@ -83,11 +83,11 @@ int restore_commit_from_shortened_id(const char* commit_id, Commit& commit) {
     ostringstream obj_path;
     obj_path << ".vms/objects/" << id_prefix;
 
-    const char* obj_subdir = obj_path.str().c_str();
+    const char* dirpath = obj_path.str().c_str();
 
-    if (is_valid_dir(obj_subdir)) {
+    if (is_valid_dir(dirpath)) {
     
-        DIR *dirptr = opendir(obj_subdir);
+        DIR *dirptr = opendir(dirpath);
         struct dirent *entry = readdir(dirptr);
 
         while (entry != NULL) {
@@ -327,20 +327,20 @@ int vms_init() {
 
     // Initialize initial commit
     Commit sentinal;
-    string sentinal_hash = sentinal.hash();
+    string sentinal_id = sentinal.hash();
 
     create_and_write_file(".vms/HEAD", "master", 0644);
-    create_and_write_file(".vms/branches/master", sentinal_hash.c_str(), 0644);
+    create_and_write_file(".vms/branches/master", sentinal_id.c_str(), 0644);
 
     ostringstream obj_path;
 
-    string sentinal_hash_prefix;
-    string sentinal_hash_suffix;
-    split_prefix_suffix(sentinal_hash, sentinal_hash_prefix, sentinal_hash_suffix, PREFIX_LENGTH);
+    string sentinal_id_prefix;
+    string sentinal_id_suffix;
+    split_prefix_suffix(sentinal_id, sentinal_id_prefix, sentinal_id_suffix, PREFIX_LENGTH);
 
-    obj_path << ".vms/objects/" << sentinal_hash_prefix;
+    obj_path << ".vms/objects/" << sentinal_id_prefix;
     make_dir(obj_path.str().c_str());
-    obj_path << "/" << sentinal_hash_suffix;
+    obj_path << "/" << sentinal_id_prefix;
 
     save<Commit>(sentinal, obj_path.str());
 
@@ -370,24 +370,24 @@ int vms_stage(const char* filepath) {
 
     } 
 
-    // Blob the file's contents and get its hash
-    ifstream ifilestream(filepath);
-    if (!ifilestream.is_open()) {
+    // Blob the file's contents and get its id
+    ifstream ifs(filepath);
+    if (!ifs.is_open()) {
         cerr << "Error occurred: unable to open file " << filepath << " for staging" << endl;
         return -1;
     }
-    Blob file_blob(ifilestream);
+    Blob file(ifs);
 
-    string file_hash = file_blob.hash();
+    string file_id = file.hash();
 
-    // Puts filepath and hash into the index map and save the updated index
-    index[filepath] = file_hash;
+    // Puts filepath and id into the index map and save the updated index
+    index[filepath] = file_id;
     save< map<string, string> >(index, ".vms/index");
 
     // Save blob in cache
-    ostringstream obj_cache_path;
-    obj_cache_path << ".vms/cache/" << file_hash;
-    save<Blob>(file_blob, obj_cache_path.str());
+    ostringstream cache_path;
+    cache_path << ".vms/cache/" << file_id;
+    save<Blob>(file, cache_path.str());
 
     return 0;
 }
@@ -419,8 +419,6 @@ int vms_commit(const char* msg) {
 
     // Create new commit, update its internal map, and move files from cache to objects directory
     Commit commit(msg);
-    // cout << "commit before adding new elements" << endl;
-    // commit.print();
 
     set<string> uuid_set;     // Create set to track which uuids have been seen before so don't try to move twice
     pair<set<string>::iterator,bool> insert_ret;
@@ -438,22 +436,19 @@ int vms_commit(const char* msg) {
             }
         }
     }
-    // cout << "commit after adding new elements" << endl;
-    // commit.print();
-
 
     // Iterate through cache directory, clearing it
     DIR *dirptr = opendir(".vms/cache");
     struct dirent *entry = readdir(dirptr);
     
-    char cache_file_path[BUFSIZ];
+    char cache_path[BUFSIZ];
     
     while (entry != NULL) {
 
-        sprintf(cache_file_path, "%s/%s", ".vms/cache", entry->d_name);
+        sprintf(cache_path, "%s/%s", ".vms/cache", entry->d_name);
 
-        if (is_valid_file(cache_file_path)) {
-            remove_file(cache_file_path);
+        if (is_valid_file(cache_path)) {
+            remove_file(cache_path);
         }
 
         entry = readdir(dirptr);
@@ -465,14 +460,14 @@ int vms_commit(const char* msg) {
     save< map<string, string> >(index, ".vms/index");
 
     // Change position of branch pointed to by HEAD
-    string commit_hash = commit.hash();
+    string commit_id = commit.hash();
     
-    string branch_fpath;
-    if (get_branch_path(branch_fpath) != 0) {
+    string branch_path;
+    if (get_branch_path(branch_path) != 0) {
         return -1;
     }
     
-    create_and_write_file(branch_fpath.c_str(), commit_hash.c_str(), 0644);
+    create_and_write_file(branch_path.c_str(), commit_id.c_str(), 0644);
 
     //Push formatted commit string to log and save
     stack<string> log;
@@ -484,13 +479,13 @@ int vms_commit(const char* msg) {
     // Serialize and save your commit.
     ostringstream obj_path;
 
-    string commit_hash_prefix;
-    string commit_hash_suffix;
-    split_prefix_suffix(commit_hash, commit_hash_prefix, commit_hash_suffix, PREFIX_LENGTH);
+    string commit_id_prefix;
+    string commit_id_suffix;
+    split_prefix_suffix(commit_id, commit_id_prefix, commit_id_suffix, PREFIX_LENGTH);
 
-    obj_path << ".vms/objects/" << commit_hash_prefix;
+    obj_path << ".vms/objects/" << commit_id_prefix;
     make_dir(obj_path.str().c_str());
-    obj_path << "/" << commit_hash_suffix;
+    obj_path << "/" << commit_id_suffix;
 
     save<Commit>(commit, obj_path.str());
 
@@ -506,26 +501,30 @@ int vms_commit(const char* msg) {
 
 int vms_log() {
 
+    stringstream log_output;
+
     stack<string> log;
     restore< stack<string> >(log, ".vms/log");
     while (!log.empty()) {
-        cout << "===\n";
-        cout << log.top() << endl;
+        log_output << "===\n";
+        log_output << log.top() << endl;
         log.pop();
     }
+
+    cout << log_output.rdbuf();
 
     return 0;
 }
 
 int vms_status(const char* arg0) {
 
-    string parent_hash; 
+    string parent_id; 
 
-    if (get_parent_ref(parent_hash) != 0) {
+    if (get_parent_ref(parent_id) != 0) {
         return -1;
     }
 
-    // List what branches currently exist and mark current branch
+    // List branches that currently exist and mark current branch
     string current_branch;
     
     if (get_branch(current_branch) != 0) {
@@ -666,16 +665,16 @@ int vms_status(const char* arg0) {
     // Load parent commit
     Commit parent_commit;
 
-    ostringstream parent_fpath;
+    ostringstream parent_path;
 
-    string parent_hash_prefix;
-    string parent_hash_suffix;
-    split_prefix_suffix(parent_hash, parent_hash_prefix, parent_hash_suffix, PREFIX_LENGTH);
+    string parent_id_prefix;
+    string parent_id_suffix;
+    split_prefix_suffix(parent_id, parent_id_prefix, parent_id_suffix, PREFIX_LENGTH);
 
-    parent_fpath << ".vms/objects/" << parent_hash_prefix << "/" << parent_hash_suffix;
+    parent_path << ".vms/objects/" << parent_id_prefix << "/" << parent_id_suffix;
 
-    restore<Commit>(parent_commit, parent_fpath.str());
-    if (parent_commit.hash() != parent_hash) {
+    restore<Commit>(parent_commit, parent_path.str());
+    if (parent_commit.hash() != parent_id) {
         std::cerr << "Fatal error has occurred in retrieval of commit: uuid mismatch. Archived object may have been corrupted. Exiting..." << std::endl;
         return -1;
     }
@@ -716,7 +715,7 @@ int vms_status(const char* arg0) {
 
     // list all untracked files in this directory
     set<string> dirs;
-    set<string> ut_files;
+    set<string> untracked_files;
 
     DIR *root_dirptr = opendir(".");
     struct dirent *root_entry = readdir(root_dirptr);
@@ -729,17 +728,17 @@ int vms_status(const char* arg0) {
         
         } else if (is_valid_file(root_entry->d_name) && !is_tracked_file(root_entry->d_name) && !is_staged_file(root_entry->d_name)) {
         
-            ut_files.insert(string(root_entry->d_name));
+            untracked_files.insert(string(root_entry->d_name));
         
         }
         root_entry = readdir(root_dirptr);
 
     }
 
-    if (!ut_files.empty()) {
+    if (!untracked_files.empty()) {
         status_stream << "Untracked files:\n";
         status_stream << "  (use \"" << arg0 << " stage <file>\" to include file to be committed and tracked)\n\n";
-        for (ss_iter = ut_files.begin(); ss_iter != ut_files.end(); ss_iter++) {
+        for (ss_iter = untracked_files.begin(); ss_iter != untracked_files.end(); ss_iter++) {
             status_stream << "    " << *ss_iter << "\n";
         }
         status_stream << endl;
@@ -760,18 +759,17 @@ int vms_status(const char* arg0) {
 
 
 int vms_mkbranch(const char* branchname) {
-    // Copy branch currently pointed to by HEAD as new branch
     string src_path;
 
     if (get_branch_path(src_path) != 0) {
         return -1;
     }
 
-    ostringstream dst_path;
-    dst_path << ".vms/branches/" << branchname;
+    ostringstream branch_path_stream;
+    branch_path_stream << ".vms/branches/" << branchname;
 
     ifstream src(src_path);
-    ofstream dst(dst_path.str());
+    ofstream dst(branch_path_stream.str());
 
     dst << src.rdbuf();
     
@@ -784,8 +782,8 @@ int vms_mkbranch(const char* branchname) {
 }
 
 int vms_mkbranch(const char* branchname, const char* commit_id) {
-    ostringstream dst_path;
-    dst_path << ".vms/branches/" << branchname;
+    ostringstream branch_path_stream;
+    branch_path_stream << ".vms/branches/" << branchname;
 
 
     // get the full commit_id and write it to dst
@@ -796,14 +794,14 @@ int vms_mkbranch(const char* branchname, const char* commit_id) {
     ostringstream full_id;
     full_id << id_prefix;
 
-    ostringstream commit_subdir;
-    commit_subdir << ".vms/objects/" << id_prefix;
+    ostringstream dirpath_stream;
+    dirpath_stream << ".vms/objects/" << id_prefix;
 
-    const char* obj_subdir = commit_subdir.str().c_str();
+    const char* dirpath = dirpath_stream.str().c_str();
 
-    if (is_valid_dir(obj_subdir)) {
+    if (is_valid_dir(dirpath)) {
     
-        DIR *dirptr = opendir(obj_subdir);
+        DIR *dirptr = opendir(dirpath);
         struct dirent *entry = readdir(dirptr);
 
         while (entry != NULL) {
@@ -818,7 +816,7 @@ int vms_mkbranch(const char* branchname, const char* commit_id) {
         }
     }
     
-    create_and_write_file(dst_path.str().c_str(), full_id.str().c_str(), 0644);
+    create_and_write_file(branch_path_stream.str().c_str(), full_id.str().c_str(), 0644);
 
     cout << "New branch " << branchname << " created at commit " << full_id.str() << endl;
 
@@ -1222,20 +1220,20 @@ int vms_merge(const char* given_branch, const char* current_branch) {
                     }
                     Blob merged_file(ifs);
 
-                    string merged_file_hash = merged_file.hash();
+                    string merged_file_id = merged_file.hash();
 
                     // Puts filepath and hash into the index map and save the updated index
-                    index[*files_it] = merged_file_hash;
+                    index[*files_it] = merged_file_id;
 
-                    string merged_file_hash_prefix;
-                    string merged_file_hash_suffix;
+                    string merged_file_id_prefix;
+                    string merged_file_id_suffix;
 
-                    split_prefix_suffix(merged_file_hash, merged_file_hash_prefix, merged_file_hash_suffix, PREFIX_LENGTH);
+                    split_prefix_suffix(merged_file_id, merged_file_id_prefix, merged_file_id_suffix, PREFIX_LENGTH);
                     // Save blob in objects
                     ostringstream obj_path;
-                    obj_path << ".vms/objects/" << merged_file_hash_prefix;
+                    obj_path << ".vms/objects/" << merged_file_id_prefix;
                     mkdir(obj_path.str().c_str(), 0755);
-                    obj_path << "/" << merged_file_hash_suffix;
+                    obj_path << "/" << merged_file_id_suffix;
                     save<Blob>(merged_file, obj_path.str());
 
                     updated_files << "    " << map_it->first << "\n";
@@ -1268,8 +1266,8 @@ int vms_merge(const char* given_branch, const char* current_branch) {
     save< map<string, string> >(index, ".vms/index");
 
     // Update commit pointed to by current branch
-    string child_commit_hash = child_commit.hash();
-    create_and_write_file(current_branch_fpath.c_str(), child_commit_hash.c_str(), 0644);
+    string child_commit_id = child_commit.hash();
+    create_and_write_file(current_branch_fpath.c_str(), child_commit_id.c_str(), 0644);
 
     //Push formatted commit string to log and save
     stack<string> log;
@@ -1281,13 +1279,13 @@ int vms_merge(const char* given_branch, const char* current_branch) {
     // Serialize and save your commit.
     ostringstream obj_path;
 
-    string child_commit_hash_prefix;
-    string child_commit_hash_suffix;
-    split_prefix_suffix(child_commit_hash, child_commit_hash_prefix, child_commit_hash_suffix, PREFIX_LENGTH);
+    string child_commit_id_prefix;
+    string child_commit_id_suffix;
+    split_prefix_suffix(child_commit_id, child_commit_id_prefix, child_commit_id_suffix, PREFIX_LENGTH);
 
-    obj_path << ".vms/objects/" << child_commit_hash_prefix;
+    obj_path << ".vms/objects/" << child_commit_id_prefix;
     make_dir(obj_path.str().c_str());
-    obj_path << "/" << child_commit_hash_suffix;
+    obj_path << "/" << child_commit_id_suffix;
 
     save<Commit>(child_commit, obj_path.str());
 

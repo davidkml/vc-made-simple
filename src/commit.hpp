@@ -35,13 +35,13 @@ class Commit {
         std::string message;
         std::string first_parent_ref;
         std::string second_parent_ref; // for merges
-        std::map<std::string, std::string> file_to_hash;
+        std::map<std::string, std::string> name_id_map;
 
         friend class boost::serialization::access;
 
         template<class Archive>
         void serialize(Archive& ar, const unsigned int version) {
-            ar & datetime & message & first_parent_ref & second_parent_ref & file_to_hash;
+            ar & datetime & message & first_parent_ref & second_parent_ref & name_id_map;
         }
 
 };

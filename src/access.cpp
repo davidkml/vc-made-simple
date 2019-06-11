@@ -20,23 +20,23 @@
 using namespace std;
 
 int restore_parent_commit(Commit& commit) {
-    string parent_hash;
+    string parent_id;
 
-    if (get_parent_ref(parent_hash) != 0) {
+    if (get_parent_ref(parent_id) != 0) {
         return -1;
     }
 
-    ostringstream parent_fpath;
+    ostringstream parent_path;
 
-    string parent_hash_prefix;
-    string parent_hash_suffix;
-    split_prefix_suffix(parent_hash, parent_hash_prefix, parent_hash_suffix, PREFIX_LENGTH);
+    string parent_id_prefix;
+    string parent_id_suffix;
+    split_prefix_suffix(parent_id, parent_id_prefix, parent_id_suffix, PREFIX_LENGTH);
 
-    parent_fpath << ".vms/objects/" << parent_hash_prefix << "/" << parent_hash_suffix;
+    parent_path << ".vms/objects/" << parent_id_prefix << "/" << parent_id_suffix;
 
-    restore<Commit>(commit, parent_fpath.str());
+    restore<Commit>(commit, parent_path.str());
 
-    if (commit.hash() != parent_hash) {
+    if (commit.hash() != parent_id) {
         std::cerr << "Fatal error has occurred in retrieval of commit: uuid mismatch. Archived object may have been corrupted. Exiting..." << std::endl;
         return -1;
     }
@@ -217,9 +217,9 @@ int get_branch_path(string& strbuf) {
         return -1;
     }
 
-    ostringstream branch_fpath;
-    branch_fpath << ".vms/branches/" << branch_name;
-    strbuf = branch_fpath.str();
+    ostringstream branch_path;
+    branch_path << ".vms/branches/" << branch_name;
+    strbuf = branch_path.str();
 
     return 0;
 
@@ -227,15 +227,15 @@ int get_branch_path(string& strbuf) {
 
 int get_parent_ref(string& strbuf) {
 
-    string branch_fpath;
+    string branch_path;
     
-    if (get_branch_path(branch_fpath) != 0) {
+    if (get_branch_path(branch_path) != 0) {
         return -1;
     }
 
-    std::ifstream branch_ifs(branch_fpath);
+    std::ifstream branch_ifs(branch_path);
     if (!branch_ifs.is_open()) {
-        std::cerr << "Error occurred in retrieving parent commit id: unable to open file " << branch_fpath << std::endl;
+        std::cerr << "Error occurred in retrieving parent commit id: unable to open file " << branch_path << std::endl;
         return -1;
     }
 
@@ -246,13 +246,13 @@ int get_parent_ref(string& strbuf) {
 }
 
 int get_id_from_branch(const string& branchname, string& strbuf) {
-    ostringstream branch_fpath;
-    branch_fpath << ".vms/branches/" << branchname;
+    ostringstream branch_path;
+    branch_path << ".vms/branches/" << branchname;
 
-    ifstream branch_ifs(branch_fpath.str());
+    ifstream branch_ifs(branch_path.str());
 
     if (!branch_ifs.is_open()) {
-        cerr << "Error occurred in retrieving commit pointed to by branch: unable to open file " << branch_fpath.str() << endl;
+        cerr << "Error occurred in retrieving commit pointed to by branch: unable to open file " << branch_path.str() << endl;
         return -1;
     }
 
