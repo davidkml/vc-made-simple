@@ -288,6 +288,24 @@ RelativeFileStatus find_relative_file_status(string filename, const map<string, 
     return NOT_FOUND;
 }
 
+bool has_relative_changes(const map<string, string>& x, const map<string, string>& ref) {
+    if (x.empty()) {
+        return false;
+    }
+
+    map<string, string>::const_iterator x_entry;
+
+    for (x_entry = x.begin(); x_entry != x.end(); x_entry++) {
+        if (find_relative_file_status(x_entry->first, x, ref) != UNMODIFIED) {
+            return true;
+        }
+    }
+
+    return false;
+    
+}
+
+
 int vms_init() {
 
     char cwd_buf[PATH_MAX];
@@ -410,15 +428,19 @@ int vms_commit(const char* msg) {
     // Load index
     map<string, string> index;  
     restore< map<string, string> >(index, ".vms/index");
+
+    // Create new commit and get its map, which is currently identical to its parent's map
+    Commit commit(msg);
+
+    map<string, string> commit_map = commit.get_map();
     
     // Check if any tracked changes to commit, if not print and return, otherwise continue
-    if (index.empty()) {
+    if (!has_relative_changes(index, commit_map)) {
         cerr << "No changes staged to commit" << endl;
         return -1;
     }
 
-    // Create new commit, update its internal map, and move files from cache to objects directory
-    Commit commit(msg);
+    // Update commit's internal map, and move files from cache to objects directory
 
     set<string> uuid_set;     // Create set to track which uuids have been seen before so don't try to move twice
     pair<set<string>::iterator,bool> insert_ret;
@@ -633,15 +655,13 @@ int vms_status(const char* arg0) {
             status_stream << "    modified:     " << it->first << "\n";
 
         }
-                
+        
     }
     if (staged_changes) {
         status_stream << endl;
     }
 
     // List all files that have been staged and have been modified since staging (and the type of modification)
-
-    // TODO: Improve performance of this loop.
 
     bool unstaged_changes = false;
     for (it = index.begin(); it != index.end(); ++it) {
