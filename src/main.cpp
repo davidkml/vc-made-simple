@@ -164,9 +164,8 @@ int main(int argc, char* argv[]) {
                     } else if (is_staged_file(norm_filepath)) {
 
                         vms_unstage(norm_filepath);
-                    } else {
-                        fprintf(stderr, "No file named %s is currently staged for commit\n", norm_filepath);
-                    }
+                    } 
+                    
                 }
                 return 0;
             }
