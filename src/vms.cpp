@@ -537,6 +537,27 @@ int vms_status(const char* arg0) {
         return -1;
     }
 
+    // Load parent commit
+    Commit parent_commit;
+
+    ostringstream parent_path;
+
+    string parent_id_prefix;
+    string parent_id_suffix;
+    split_prefix_suffix(parent_id, parent_id_prefix, parent_id_suffix, PREFIX_LENGTH);
+
+    parent_path << ".vms/objects/" << parent_id_prefix << "/" << parent_id_suffix;
+
+    restore<Commit>(parent_commit, parent_path.str());
+    if (parent_commit.hash() != parent_id) {
+        std::cerr << "Fatal error has occurred in retrieval of commit: uuid mismatch. Archived object may have been corrupted. Exiting..." << std::endl;
+        return -1;
+    }
+
+
+    // Get copy of map of parent commit
+    map<string, string> parent_map = parent_commit.get_map();
+
 
     stringstream status_stream;
     status_stream << "On branch " << current_branch.c_str() << "  [" << branch_id.substr(0,6) << "]\n";
@@ -575,11 +596,13 @@ int vms_status(const char* arg0) {
     map<string,string>::iterator it;
 
     bool staged_changes = false;
+    RelativeFileStatus rf_status;
 
     for (it = index.begin(); it != index.end(); ++it) {
-        // if new (not currently tracked)
-        if (!is_tracked_file(it->first.c_str())) {
 
+        rf_status = find_relative_file_status(it->first, index, parent_map);
+
+        if (it->second == STAGE_DELETE) {
             if (!staged_changes) {
                 staged_changes = true;
                 status_stream << "Changes staged for commit\n";
@@ -587,10 +610,9 @@ int vms_status(const char* arg0) {
                 status_stream << "  (use \"" << arg0 << " commit <message>\" to commit all staged changes)\n\n";
             }
 
-            status_stream << "    new file:    " << it->first << "\n";
+            status_stream << "    deleted:    " << it->first << "\n";
 
-        } else if (it->second == STAGE_DELETE) {    // if deleted (mapped to delete)
-            
+        } else if (rf_status == NEW) {
             if (!staged_changes) {
                 staged_changes = true;
                 status_stream << "Changes staged for commit\n";
@@ -598,10 +620,9 @@ int vms_status(const char* arg0) {
                 status_stream << "  (use \"" << arg0 << " commit <message>\" to commit all staged changes)\n\n";
             }
 
-            status_stream << "    deleted:     " << it->first << "\n";
+            status_stream << "    new_file:    " << it->first << "\n";
 
-        } else if (is_modified_tracked_file(it->first.c_str())) { // if modified
-
+        } else if (rf_status == MODIFIED) {
             if (!staged_changes) {
                 staged_changes = true;
                 status_stream << "Changes staged for commit\n";
@@ -609,12 +630,10 @@ int vms_status(const char* arg0) {
                 status_stream << "  (use \"" << arg0 << " commit <message>\" to commit all staged changes)\n\n";
             }
 
-            status_stream << "    modified:    " << it->first << "\n";
+            status_stream << "    modified:     " << it->first << "\n";
 
-        } 
-
-        // Note: the order of these checks is important; checks not mutually exclusive 
-        
+        }
+                
     }
     if (staged_changes) {
         status_stream << endl;
@@ -662,26 +681,6 @@ int vms_status(const char* arg0) {
 
     // list all tracked files that have not been staged and have been modified (and the type of modification)
 
-    // Load parent commit
-    Commit parent_commit;
-
-    ostringstream parent_path;
-
-    string parent_id_prefix;
-    string parent_id_suffix;
-    split_prefix_suffix(parent_id, parent_id_prefix, parent_id_suffix, PREFIX_LENGTH);
-
-    parent_path << ".vms/objects/" << parent_id_prefix << "/" << parent_id_suffix;
-
-    restore<Commit>(parent_commit, parent_path.str());
-    if (parent_commit.hash() != parent_id) {
-        std::cerr << "Fatal error has occurred in retrieval of commit: uuid mismatch. Archived object may have been corrupted. Exiting..." << std::endl;
-        return -1;
-    }
-
-
-    // Get copy of map of parent commit
-    map<string, string> parent_map = parent_commit.get_map();
 
     for (it = parent_map.begin(); it != parent_map.end(); ++it) {
         if (!is_staged_file(it->first.c_str())) {
