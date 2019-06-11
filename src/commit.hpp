@@ -17,13 +17,12 @@ class Commit {
         Commit();
         Commit(const std::string& msg);
 
-        std::string hash();
-        std::string log_string();
-        std::string tracked_files_string();
-        std::pair<std::string, std::string> parent_ids();
-        void print(); // delete after testing
-        std::map<std::string, std::string> get_map();
-        bool map_contains(const std::string& key);
+        std::string hash() const;
+        std::string log_string() const;
+        std::string tracked_files_string() const;
+        std::pair<std::string, std::string> parent_ids() const;
+        std::map<std::string, std::string> get_map() const;
+        bool map_contains(const std::string& key) const;
         
         bool find_in_map_and_get_iter(const std::string& key, std::map<std::string, std::string>::iterator& it);
         void put_to_map(const std::string& key, const std::string& value);
