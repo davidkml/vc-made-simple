@@ -358,7 +358,7 @@ int vms_init() {
 
     obj_path << ".vms/objects/" << sentinal_id_prefix;
     make_dir(obj_path.str().c_str());
-    obj_path << "/" << sentinal_id_prefix;
+    obj_path << "/" << sentinal_id_suffix;
 
     save<Commit>(sentinal, obj_path.str());
 
