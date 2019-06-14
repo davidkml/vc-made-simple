@@ -263,7 +263,7 @@ int get_id_from_branch(const string& branchname, string& strbuf) {
 }
 
 
-int split_prefix_suffix(const std::string& str, std::string& prefix, std::string& suffix, int n) {
+int split_prefix_suffix(const std::string& str, std::string& prefix, std::string& suffix, unsigned int n) {
     if (n > str.length() - 1) {
         return -1;
     }

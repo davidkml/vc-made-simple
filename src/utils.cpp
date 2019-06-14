@@ -4,6 +4,9 @@
 #include <sys/stat.h> // for creat
 #include <fcntl.h> // for creat
 #include <unistd.h> // for write, getcwd
+#include <string.h>
+#include <errno.h>
+#include <stdio.h>
 
 #include <limits.h> // for realpath
 #include <stdlib.h> // for realpath

@@ -1,9 +1,9 @@
 # Makefile written based on generic template shared by Hilton Lipschitz (https://hiltmon.com)
 
 CC = g++
-TESTDIR = tests
 BUILDDIR = build
 SRCDIR = src
+TARGETDIR = bin
 
 TARGET = bin/vms
 
@@ -12,10 +12,11 @@ SOURCES = $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS = $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 
 CFLAGS = -Wall -g -fsanitize=address
-LIB = -lboost_iostreams -lboost_serialization
+LIB = -lboost_iostreams -lboost_serialization -std=c++11
 # Don't forget to add dependencies on headers
 $(TARGET): $(OBJECTS)
 	@echo "Linking..."
+	mkdir -p $(TARGETDIR)
 	$(CC) $(CFLAGS) $(LIB) $^ -o $@
 	
 

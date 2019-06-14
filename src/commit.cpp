@@ -2,7 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <boost/compute/detail/sha1.hpp>
-
+#include <chrono>
 
 #include "commit.hpp"
 #include "archive.hpp"

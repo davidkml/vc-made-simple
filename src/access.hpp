@@ -32,8 +32,8 @@ int get_parent_ref(std::string& strbuf);
 
 int get_id_from_branch(const std::string& branchname, std::string& strbuf);
 
-int split_prefix_suffix(const std::string& str, std::string& prefix, std::string& suffix, int n);
+int split_prefix_suffix(const std::string& str, std::string& prefix, std::string& suffix, unsigned int n);
 
-const int PREFIX_LENGTH = 2;
+const unsigned int PREFIX_LENGTH = 2;
 
 #endif // ACCESS_HPP
