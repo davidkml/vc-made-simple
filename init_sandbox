@@ -1,0 +1,21 @@
+#!/bin/bash
+test_dir='sandbox'
+
+if [ -d $test_dir ]; then
+  rm -rf $test_dir
+fi
+mkdir $test_dir
+
+if [[ ! "$PATH" =~ "$PWD/bin" ]]; then
+  export PATH=$PWD/bin:$PATH
+fi
+
+cd $test_dir
+
+printf "\nWelcome to your personal sandbox for exploring the features of Vms!\n\n"
+printf "From here, you can type the command \"vms init\" and manually add\n" 
+printf "files to get started.\n\n"
+
+printf "If you ever want to start over fresh, you may go one directory up\n"
+printf "and type \"source init_sandbox\" to clear and reinitialize the entire\n"
+printf "directory.\n\n"
