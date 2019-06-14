@@ -1,10 +1,10 @@
 # Vms, Version Control Made Simple
 
-Vms is a version control system designed for simplicity, allowing users to easily track changes in files during development. Inspired by the popular version control system Git, Vms was designed with the goal of maintaining many of the design philosophies, structures, and features that make Git a powerful version control system while also providing an interface that abstracts some of the more complex elements and options that might intimidate or overwhelm new users.
+Vms is a version control system designed for simplicity. Inspired by the popular version control system Git, Vms was designed with the goal of maintaining many of the design philosophies, structures, and features that make Git a powerful version control system while also providing an interface that abstracts some of the more complex elements and options that might intimidate or overwhelm new users.
 
 Some of the features Vms has adopted from Git include:
 
--   **a branching and merging model** which allows users to create and manage independent branches which may be used for logically separating, carrying out, and experimenting with different lines of development
+-   **a branching and merging model** which allows users to create and manage independent branches that may be used for logically separating, carrying out, and experimenting with different lines of development
 -   **localized operations** which offer speed advantages relative to centralized systems that must constantly communicate with a remote server.
 -   **localized repositories** that contain the entire commit history of a project, enabling possible support in the future for a variety of distributed and centralized workflows
 -   **data integrity and assurance** by comparing every file retrieved from the repository with the cryptographic hash of the file’s contents at the time it was committed— in this way, serving as a checksum, ensuring archived data cannot be corrupted or altered without the system knowing
@@ -77,7 +77,7 @@ where '/path/to/vc-made-simple' should be replaced with the actual path to the d
 source ~/.bash_profile
 ```
 
-To get started quickly or walk through a demonstration, take a look at the [Tutorial](doc/TUTORIAL.md).
+To get started quickly or walk through a demonstration, take a look at the [Tutorial](docs/TUTORIAL.md).
 
 ### Commands
 
@@ -87,9 +87,9 @@ Below is a reference list of commands and a brief description of their purpose. 
 
 - `vms status`: Display the status of the working tree, including the current branch, other branches that exist, changes staged for commit, unstaged modifications to tracked files, and untracked files and directories.
 
-- `vms stage [<filenames>] [<dirnames>]`: Adds the contents of the given files as they currently exist to the staging area.
+- `vms stage [<filenames>] [<dirnames>]`: Add the contents of the given files as they currently exist to the staging area.
 
-- `vms unstage [<filenames>] [<dirnames>]`: Removes the given files from the staging area.
+- `vms unstage [<filenames>] [<dirnames>]`: Remove the given files from the staging area.
 
 - `vms commit <message>`: Record a snapshot of the versions of the files you staged with `vms stage` with an associated message in the repository so that they can be restored in the future.
 
@@ -110,6 +110,7 @@ Below is a reference list of commands and a brief description of their purpose. 
 ## Future Roadmap
 There is still a much to be done before this application can be practically used. In addition to small improvements to the existing codebase, some major goals include:
 - a framework or strategy for automated testing
+- simpler installation and resolution of dependencies
 - portability to other platforms
 - benchmarking and optimization for speed, memory, and scale
 - extensions for remote features
