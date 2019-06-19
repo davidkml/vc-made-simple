@@ -604,7 +604,7 @@ int vms_status(const char* arg0) {
     set<string>::iterator ss_iter;
     
     if (!branches.empty()) {
-        status_stream << "\nOther branches:\n";
+        status_stream << "\nOther branches\n";
         for (ss_iter = branches.begin(); ss_iter != branches.end(); ss_iter++) {
             get_id_from_branch(*ss_iter, branch_id);
             status_stream << "    " << *ss_iter << "  [" << branch_id.substr(0,6) << "]\n";
@@ -642,7 +642,7 @@ int vms_status(const char* arg0) {
                 status_stream << "  (use \"" << arg0 << " commit <message>\" to commit all staged changes)\n\n";
             }
 
-            status_stream << "    new_file:    " << it->first << "\n";
+            status_stream << "    new file:    " << it->first << "\n";
 
         } else if (rf_status == MODIFIED) {
             if (!staged_changes) {
@@ -671,7 +671,7 @@ int vms_status(const char* arg0) {
             if (!is_valid_file(it->first.c_str())) {    // if previously staged file has been deleted, list it as deleted
                 if (!unstaged_changes) {
                     unstaged_changes = true;
-                    status_stream << "Changes not yet staged for commit:\n";
+                    status_stream << "Changes not yet staged for commit\n";
                     status_stream << "  (use \"" << arg0 << " stage <file>\" to update or stage changes to be committed)\n\n";
                 }
 
@@ -679,7 +679,7 @@ int vms_status(const char* arg0) {
             } else if (!file_hash_equal_to_working_copy(it->first, it->second)) {    // if tracked file has been modified, list it as modified
                 if (!unstaged_changes) {
                     unstaged_changes = true;
-                    status_stream << "Changes not yet staged for commit:\n";
+                    status_stream << "Changes not yet staged for commit\n";
                     status_stream << "  (use \"" << arg0 << " stage <file>\" to update or stage changes to be committed)\n\n";
                 }
 
@@ -690,7 +690,7 @@ int vms_status(const char* arg0) {
             if (is_valid_file(it->first.c_str())) { // if file is no longer deleted and can be staged to be added again, should notify user. By definition, file staged to be deleted from tracking is already tracked, so check if it has changes. If so, then list it as modified
                 if (!unstaged_changes) {
                     unstaged_changes = true;
-                    status_stream << "Changes not yet staged for commit:\n";
+                    status_stream << "Changes not yet staged for commit\n";
                     status_stream << "  (use \"" << arg0 << " stage <file>\" to update or stage changes to be committed)\n\n";
                 }
 
@@ -707,7 +707,7 @@ int vms_status(const char* arg0) {
             if (!is_valid_file(it->first.c_str())) { // unstaged tracked file has been deleted from working directory
                 if (!unstaged_changes) {
                     unstaged_changes = true;
-                    status_stream << "Changes not yet staged for commit:\n";
+                    status_stream << "Changes not yet staged for commit\n";
                     status_stream << "  (use \"" << arg0 << " stage <file>\" to update or stage changes to be committed)\n\n";
                 }
 
@@ -716,7 +716,7 @@ int vms_status(const char* arg0) {
             } else if (is_modified_tracked_file(it->first.c_str())) {
                 if (!unstaged_changes) {
                     unstaged_changes = true;
-                    status_stream << "Changes not yet staged for commit:\n";
+                    status_stream << "Changes not yet staged for commit\n";
                     status_stream << "  (use \"" << arg0 << " stage <file>\" to update or stage changes to be committed)\n\n";
                 }
 
@@ -755,7 +755,7 @@ int vms_status(const char* arg0) {
     }
 
     if (!untracked_files.empty()) {
-        status_stream << "Untracked files:\n";
+        status_stream << "Untracked files\n";
         status_stream << "  (use \"" << arg0 << " stage <file>\" to include file to be committed and tracked)\n\n";
         for (ss_iter = untracked_files.begin(); ss_iter != untracked_files.end(); ss_iter++) {
             status_stream << "    " << *ss_iter << "\n";
@@ -765,7 +765,7 @@ int vms_status(const char* arg0) {
 
 
     if (!dirs.empty()) {
-        status_stream << "Sub-directories:\n";
+        status_stream << "Sub-directories\n";
         for (ss_iter = dirs.begin(); ss_iter != dirs.end(); ss_iter++) {
             status_stream << "    " << *ss_iter << "/\n";
         }
@@ -1086,7 +1086,7 @@ int vms_merge(const char* given_branch, const char* current_branch) {
     map<string, string>::iterator map_it;
 
     stringstream updated_files;
-    updated_files << "Updated files:\n";
+    updated_files << "Updated files\n";
 
     if (split_id == current_branch_id) { // Current branch is a direct ancestor of given branch, so fast forward merge
         cout << "\nCurrent branch " << current_branch << " is a direct ancestor of given branch " << given_branch << "\n";
