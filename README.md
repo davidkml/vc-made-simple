@@ -1,6 +1,6 @@
 # Vms, Version Control Made Simple
 
-Vms is a version control system designed for simplicity. Inspired by the popular version control system Git, Vms was designed with the goal of maintaining many of the design philosophies, structures, and features that make Git a powerful version control system while also providing an interface that abstracts some of the more complex elements and options that might intimidate or overwhelm new users.
+Vms is a version control system designed for simplicity, inspired by the popular version control system Git.
 
 Some of the features Vms has adopted from Git include:
 
@@ -10,13 +10,11 @@ Some of the features Vms has adopted from Git include:
 -   **data integrity and assurance** by comparing every file retrieved from the repository with the cryptographic hash of the file’s contents at the time it was committed— in this way, serving as a checksum, ensuring archived data cannot be corrupted or altered without the system knowing
 -   **an intermediate staging area** where users may review and manage changes before committing them to the repository
 
-Vms was designed with the intent of introducing a means of version control that is accessible to a users of diverse backgrounds, especially those not versed in the knowledge needed to navigate and comprehend some of Git’s more cryptic commands and help text relating to its internal structures and implementation. Vms is run on the command line using commands that perform the most important and commonly used operations of Git while also being intuitive, semantic, safe, and simple.
+Vms was implemented with the goal of maintaining many of the design philosophies, structures, and features that make Git a powerful version control system while also providing a simpler interface. It features a reduced set of commands and options, instead focusing on the use of easy-to-understand primitives to accomplish version control tasks. It was also designed to abstract lower level structures like the HEAD pointer, exhibit intuitive behavior and syntax, and provide a safe, performant, and robust experience. 
 
-Whether users try Vms as a simple alternative to some of the more complex version control systems or simply as a stepping stone for learning the basics of version control, I hope it is in some way helpful!
+This project was not developed to be a replacement for Git. At its core, it is a personal learning project started in my free time to develop a deeper understanding of the decisions and challenges underlying the design of a software system like Git.
 
-This personal project started in my free time as a learning exercise in understanding the decisions and challenges involved in designing a software system like git, as well as an exercise in C++ programming.
-
-For more reading about the considerations, under-the-hood details, and specifications involved in the design of Vms, see my [design documentation](docs/DESIGN.md).
+However, I still hope that the end product will somehow make version control more accessible to users of diverse background, it serves to be a simple alternative to some of the more complex version control systems or simply a stepping stone for learning the basics of version control.
 
 ## Getting started
 
@@ -61,18 +59,18 @@ If no errors occurred and compilation was successful, then you are finished.
 
 ## How to use it
 
-**For those who only want to demo the application**, I have provided a simple bash script that will temporarily add the directory to your $PATH and move you into a new subdirectory called `sandbox` in which you can add in, modify files, and experiment with the application for the duration of Terminal session. To do this, inside the `vc-made-simple` directory, run:
+**For those who only want to demo the application**, I have provided a simple bash script that will temporarily add the directory to your $PATH so the executable can be found by your system and move you into a new subdirectory called `sandbox` in which you can add files, modify files, and experiment with the application for the duration of Terminal session. To do this, move into the `vc-made-simple` directory and run:
 ```bash
 source init_sandbox
 ```
 
-Every time you use the script, your previous directory will be deleted, so you can start fresh,  so **be careful to not leave any important files in the `sandbox` directory!** 
+Every time you use the script, your previous directory will be deleted so you can start fresh,  so **be careful to not leave any important files in the `sandbox` directory!** 
 
 **Alternatively**, you may more permanently add the application to your $PATH by adding to your `~/.bash_profile` file the line:
 ```bash
-export PATH="/path/to/vc-made-simple/bin"
+export PATH=/path/to/vc-made-simple/bin:$PATH
 ```
-where '/path/to/vc-made-simple' should be replaced with the actual path to the directory in your computer. Then, to effect the change, run:
+where `/path/to/vc-made-simple/` should be replaced with the actual path to the directory in your computer. Then, to effect the change, run:
 ```bash
 source ~/.bash_profile
 ```
@@ -81,7 +79,7 @@ To get started quickly or walk through a demonstration, take a look at the [Tuto
 
 ### Commands
 
-Below is a reference list of commands and a brief description of their purpose. For more detailed specifications on their behavior, see the associated chapter in the [design documentation](docs/DESIGN.md).
+Below is a reference list of commands and a brief description of their purpose. For more detailed specifications on their behavior, please see the [command specification](docs/COMMANDS.md).
 
 - `vms init`: Create an empty Vms repository.
 
@@ -110,13 +108,13 @@ Below is a reference list of commands and a brief description of their purpose. 
 ## Future Roadmap
 There is still a much to be done before this application can be practically used. In addition to small improvements to the existing codebase, some major goals include:
 - a framework or strategy for automated testing
-- simpler installation and resolution of dependencies
+- simpler installation procedure and resolution of dependencies
 - portability to other platforms
 - benchmarking and optimization for speed, memory, and scale
 - extensions for remote features
 
 ## Testing
-Much of the testing to this point has been manual. The frequent changes to the user interface, outputs, and file system make it so that, by nature, the application is challenging and laborious to author complete automated tests for. Manual testing has the advantage of providing an opportunity to obtain insight into the user experience, yielding information with which to derive additional tests. 
+A majority of the testing to this point has been manual. The frequent changes to the user interface, outputs, and file system make it so that, by nature, the application is challenging and laborious to author complete automated tests for. Moreover, manual testing has the advantage of providing opportunities to obtain insight into the user experience, yielding information with which to derive additional tests and features. 
 
 The testing of this application in the prototyping stage has been guided by a high level test plan and domain knowledge of desired behavior to assist in testing completeness. However, as the project continues to develop, I expect there will be a growing need for automated tests.
 
