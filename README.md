@@ -14,7 +14,7 @@ Vms was implemented with the goal of maintaining many of the design philosophies
 
 This project was not developed to be a replacement for Git. At its core, it is a personal learning project started in my free time to develop a deeper understanding of the decisions and challenges underlying the design of a software system like Git.
 
-However, I still hope that the end product will somehow make version control more accessible to users of diverse background, it serves to be a simple alternative to some of the more complex version control systems or simply a stepping stone for learning the basics of version control.
+However, I still hope that the end product will somehow make version control more accessible to users of diverse background, whether it serves to be a simple alternative to some of the more complex version control systems or simply a stepping stone for learning the basics of version control.
 
 ## Getting started
 
