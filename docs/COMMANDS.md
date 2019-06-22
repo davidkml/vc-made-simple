@@ -303,11 +303,83 @@ usage: vms info <commitid> [filename]
 ## merge
 **Usage**: `vms merge <branchname>`
 
-**Description**:
+**Description**: Merge files from the given branch into the current branch.
+- warn user that merging will clear the staging area and may overwrite uncommitted changes for files in the working directory and ask for confirmation
+- if user answers `n`, abort without changing state
+- if user answers `y`, continue with merge
+- if split point of the two branches is the given branch (i.e. given branch is a direct ancestor of the current branch): 
+	- abort and output `Not necessary to merge. Given branch is direct ancestor of current branch`.
+- if split point of the two branches is the current branch (i.e. current branch is a direct ancestor of the given branch):
+	- update files in the current working directory with the files as they exist in the commit pointed to by the given branch.
+	- update the current branch to point to the commit pointed to by the given branch
+	- clear the staging area
+	- output:
+	```
+	Current branch <current_branch> is a direct ancestor of given branch <given_branch>
+	Fast forward merging branch <current_branch> into branch <given_branch>
+	Updated files
+	    <file>
+	    [...]
+	```
+
+- if split point of the two branches is neither the current branch nor the given branch, iterate through the union of the files recorded by the commits of the current branch, given branch, and split-point, and relative to the state of the file in the split point:
+	-  if the file has been modified in the given branch but has not been modified in the current branch 
+	**OR**
+	if the file has has been modified in the given branch but has deleted in the current branch
+	**OR**
+	if the file is new in the given branch but is not present in the current branch
+	**THEN**
+	check out the file into the current directory and add it to the staging area to commit at the end
+	
+	-  if the file has been modified in the current branch but has not been modified in the given branch 
+	**OR**
+	if the file has has been modified in the current branch but has deleted in the given branch
+	**OR**
+	if the file is new in the current branch but is not present in the given branch
+	**THEN**
+	do nothing with that file; the current branch's version is already the most up-to-date version
+	
+	- if the file has been deleted in the given branch but has not been modified in the current branch, then stage the file to be deleted in the current branch
+
+	- if the file has been deleted in the current branch but has not been modified in the given branch, then do nothing with that file; the current branch's version is already the most up-to-date version
+	
+	- if the file has been deleted in both branches, then do nothing with that file; the current branch's version is already the most up-to-date version
+
+	- if the file has not been modified in both branches, then do nothing with that file; the current branch's version is already the most up-to-date version
+
+	- otherwise, the file has either been modified or newly created in both branches. If the file contents are identical, then do nothing. Otherwise, it is a merge conflict: overwrite the file in the current directory with the formatted content:
+	```
+	<<<<<<< version: <current_branch>
+	<contents_of_version_in_current_branch>
+	=======
+	<contents_of_version_in_given_branch>
+	>>>>>>> version: <given_branch>
+	```
+	
+	- save the merge-conflict-formatted file and stage it
+	- after iterating through the entire union, create a new commit with both commit ids as parents, update its internal map with the contents of the staging area and save the commit
+	- move the current branch to point to this new commit
+	- clear the staging area
+	- update the log
+	- change the permissions of generated files
 
 **Failure cases**: 
-- If repository is not in initialized, abort and print to standard error:
+- if repository is not in initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
+```
+- if not enough arguments are given, abort and print to standard error:
+```
+Must provide name of branch to merge into current branch
+usage: vms merge <branchname>
+```
+- if given branch is the current branch, abort and print to standard error:
+```
+Currently on branch <branchname>: cannot merge a branch with itself
+```
+- if given branch does not exist, abort and print to standard error:
+```
+No branch named <branchname>
+  (use "vms status" to see list of available branches)
 ```
