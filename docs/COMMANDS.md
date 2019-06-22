@@ -142,7 +142,18 @@ No changes staged to commit
 ## log
 **Usage**: `vms log`
 
-**Description**: 
+**Description**: Display a chronological log of the commit history with format:
+```
+===
+commit  <commit_id>
+Date    <date_and_time>
+parent  <parent_commit_id>
+		[parent_commit_id2]
+
+    <message>
+[...]
+```
+- if the commit has no second parent, then it is not displayed
 
 **Failure cases**: 
 - If repository is not in initialized, abort and print to standard error:
