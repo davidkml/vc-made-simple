@@ -10,7 +10,7 @@
 - prints `Repository initialized at <cwd>` upon success
 
 **Failure cases**: 
-- If there is already a repository initialized in the current directory, then abort and print to standard error:
+- If there is already a repository initialized in the current directory, abort and print to standard error:
 ```
 Repository is already initialized
   (type "vms" in command prompt to display a summary of available commands)
@@ -57,7 +57,7 @@ Sub-directories
 - staging a file that is not tracked moves it from the `Untracked files` header into the `Changes staged for commit` header
 
 **Failure cases**: 
-- If repository is not in initialized, then abort and print to standard error:
+- If repository is not in initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
@@ -66,26 +66,48 @@ Repository is not initialized
 ## stage
 **Usage**: `vms stage [<filenames>] [<dirnames>]`
 
-**Description**:
+**Description**: Add snapshots of the contents of the given files to the staging area. 
+- preprocessing and normalization of given file and directory paths is performed before staging
+- if multiple arguments are given, each is staged sequentially
+- if directory is given, then stage all of the files in that directory
+- if a tracked file has been deleted and the deletion was staged, stage the file with a special value that tells the system to remove it from tracking
+- cache the contents of the file being staged to create a snapshot and reduce the requirements during the commit operation
 
 **Failure cases**: 
-- If repository is not in initialized, then abort and print to standard error:
+- If repository is not in initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
 ```
+- if not enough arguments given, abort and print to standard error:
+ ```
+ Must provide filenames or directories
+ usage: vms stage [<filenames>] [<dirnames>]
+ ```
+- if provided file is not valid (is not a file being tracked by the current commit, does not exist in current working directory, or is not a file in the staging area), then print to standard error `
+<file> is not a valid or currently tracked file or directory ` and proceed to the next provided argument if any
+
 
 ## unstage
 **Usage**: `vms unstage [<filenames>] [<dirnames>]`
 
-**Description**:
+**Description**: Remove the given files from the staging area
+- preprocessing and normalization of given file and directory paths is performed before unstaging
+- if multiple arguments are given, each is unstaged sequentially
+- if a file or directory path is given that doesn't correspond to a file in the staging area, fail silently and proceed to the next argument if any
 
 **Failure cases**: 
-- If repository is not in initialized, then abort and print to standard error:
+- If repository is not in initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
 ```
+- if not enough arguments given, abort and print to standard error:
+ ```
+ Must provide filenames or directories
+ usage: vms unstage [<filenames>] [<dirnames>]
+ ```
+
 
 ## commit
 **Usage**: `vms commit <message>`
@@ -93,7 +115,7 @@ Repository is not initialized
 **Description**:
 
 **Failure cases**: 
-- If repository is not in initialized, then abort and print to standard error:
+- If repository is not in initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
@@ -105,7 +127,7 @@ Repository is not initialized
 **Description**:
 
 **Failure cases**: 
-- If repository is not in initialized, then abort and print to standard error:
+- If repository is not in initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
@@ -117,7 +139,7 @@ Repository is not initialized
 **Description**:
 
 **Failure cases**: 
-- If repository is not in initialized, then abort and print to standard error:
+- If repository is not in initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
@@ -129,7 +151,7 @@ Repository is not initialized
 **Description**:
 
 **Failure cases**: 
-- If repository is not in initialized, then abort and print to standard error:
+- If repository is not in initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
@@ -141,7 +163,7 @@ Repository is not initialized
 **Description**:
 
 **Failure cases**: 
-- If repository is not in initialized, then abort and print to standard error:
+- If repository is not in initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
@@ -153,7 +175,7 @@ Repository is not initialized
 **Description**:
 
 **Failure cases**: 
-- If repository is not in initialized, then abort and print to standard error:
+- If repository is not in initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
@@ -165,7 +187,7 @@ Repository is not initialized
 **Description**:
 
 **Failure cases**: 
-- If repository is not in initialized, then abort and print to standard error:
+- If repository is not in initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
