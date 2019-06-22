@@ -276,15 +276,30 @@ Currently on branch <branchname>
 ## info
 **Usage**: `vms info <commitid> [file]`
 
-**Description**:
+**Description**: Display information for the commit corresponding to the given id (or optionally, of the contents of the given file versioned in that commit).
 
 **Failure cases**: 
-- If repository is not in initialized, abort and print to standard error:
+- if repository is not in initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
 ```
-
+- if not enough arguments are given, abort and print to standard error:
+```
+Must provide id of commit to look up and optionally a filename
+usage: vms info <commitid> [filename]
+```
+-  if the given commit id does not uniquely match a commit in the repository, abort and print to standard error:
+```
+Provided commit id <commitid> generated ambiguous or no matches
+Please provide more characters or verify the accuracy of your input
+  (use "vms log" to see log of commits)
+```
+- if more than one filename is given, abort and print to standard error:
+```
+May only provide a single filename argument
+usage: vms info <commitid> [filename]
+```
 ## merge
 **Usage**: `vms merge <branchname>`
 
