@@ -1,5 +1,19 @@
 # Commands
 
+Contents
+[init](#init) <br>
+[status](#status) <br>
+[stage](#stage) <br>
+[unstage](#unstage) <br>
+[commit](#commit) <br>
+[log](#log) <br>
+[checkout files](#checkout-files) <br>
+[checkout branch](#checkout-branch) <br>
+[mkbranch](#mkbranch) <br>
+[rmbranch](#rmbranch) <br>
+[info](#info) <br>
+[merge](#merge) <br>
+
 ## init
 **Usage**: `vms init`
 
