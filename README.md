@@ -89,7 +89,7 @@ Below is a reference list of commands and a brief description of their purpose. 
 
 - `vms unstage [<filenames>] [<dirnames>]`: Remove the given files from the staging area.
 
-- `vms commit <message>`: Record a snapshot of the versions of the files you staged with `vms stage` with an associated message in the repository so that they can be restored in the future.
+- `vms commit <message>`: Save the snapshots of the files in the staging area into the repository with an associated message and create a new commit in the history
 
 - `vms log`:  Display a chronological log of your commit history.
 
