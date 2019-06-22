@@ -10,7 +10,7 @@
 - prints `Repository initialized at <cwd>` upon success
 
 **Failure cases**: 
-- If there is already a repository initialized in the current directory, abort and print to standard error:
+- if there is already a repository initialized in the current directory, abort and print to standard error:
 ```
 Repository is already initialized
   (type "vms" in command prompt to display a summary of available commands)
@@ -57,7 +57,7 @@ Sub-directories
 - staging a file that is not tracked moves it from the `Untracked files` header into the `Changes staged for commit` header
 
 **Failure cases**: 
-- If repository is not in initialized, abort and print to standard error:
+- if repository is not in initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
@@ -74,7 +74,7 @@ Repository is not initialized
 - cache the contents of the file being staged to create a snapshot and reduce the requirements during the commit operation
 
 **Failure cases**: 
-- If repository is not in initialized, abort and print to standard error:
+- if repository is not in initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
@@ -97,7 +97,7 @@ Repository is not initialized
 - if a file or directory path is given that doesn't correspond to a file in the staging area, fail silently and proceed to the next argument if any
 
 **Failure cases**: 
-- If repository is not in initialized, abort and print to standard error:
+- if repository is not in initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
@@ -125,12 +125,12 @@ Repository is not initialized
 - save the commit with an updated internal map into the  `vms/objects` directory
 
 **Failure cases**: 
-- If repository is not in initialized, abort and print to standard error:
+- if repository is not in initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
 ```
-- If not enough arguments are given, abort and print to standard error:
+- if not enough arguments are given, abort and print to standard error:
 ```
 Must provide a message with your commit
 usage: vms commit <message>
@@ -156,22 +156,66 @@ parent  <parent_commit_id>
 - if the commit has no second parent, then it is not displayed
 
 **Failure cases**: 
-- If repository is not in initialized, abort and print to standard error:
+- if repository is not in initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
 ```
 
-## checkout
-**Usage**: `vms checkout files <commitid> [<filenames>]` **or** `vms checkout branch <branchname>`
+## checkout files
+**Usage**: `vms checkout files <commitid> [<filenames>]`
 
-**Description**:
+**Description**: Restore the version of all (or optionally, only the given) files as they exist in the commit corresponding to the given id, overwriting the versions in the current working directory, if they exist.
+- output warning prompt to user along with information about files that may be updated
+- if user answers `n`, abort without changing state
+- if user answers `y`, write or overwrite files in the current directory with the versions as they exist in the commit with the given id.
 
 **Failure cases**: 
-- If repository is not in initialized, abort and print to standard error:
+- if repository is not in initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
+```
+- if not enough arguments are given, abort and print to standard error:
+```
+Must provide id of commit to checkout and optionally files
+usage: vms checkout files <commitid> [<filenames>]
+``` 
+- if the given commit id does not uniquely match a commit in the repository, abort and print to standard error:
+```
+Provided commit id <commitid> generated ambiguous or no matches
+Please provide more characters or verify the accuracy of your input
+  (use "vms log" to see a log of commits)
+```
+
+## checkout branch
+**Usage**: `vms checkout branch <branchname>`
+
+**Description**: Switch branches and update files in the current working directory with the versions as they exist in the given branch.
+- output warning prompt to user along with information about files that may be updated
+- if user answers `n`, abort without changing state
+- if user answers `y`, move the HEAD pointer to point to the given branch and write or overwrite files in the current directory with the versions as they exist in the commit with the given id.
+- clear the staging area.
+ 
+**Failure cases**: 
+- if repository is not in initialized, abort and print to standard error:
+```
+Repository is not initialized
+  (use "vms init" to initialize repository)
+```
+- if not enough arguments are given, abort and print to standard error:
+```
+Must provide name of branch to checkout
+usage: vms checkout branch <branchname>
+```
+- if the given branch does not exist, abort and print to standard error:
+```
+There is no branch named <branchname>
+  (use "vms status" to see list of available branches)
+```
+- if the given branch is the current branch, abort and print to standard error:
+```
+Already on branch <branchname>
 ```
 
 ## mkbranch
