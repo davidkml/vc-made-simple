@@ -1,6 +1,6 @@
 # Commands
 
-Contents
+Contents <br>
 [init](#init) <br>
 [status](#status) <br>
 [stage](#stage) <br>
@@ -337,20 +337,20 @@ usage: vms info <commitid> [filename]
 	```
 
 - if split point of the two branches is neither the current branch nor the given branch, iterate through the union of the files recorded by the commits of the current branch, given branch, and split-point, and relative to the state of the file in the split point:
-	-  if the file has been modified in the given branch but has not been modified in the current branch 
-	**OR**
-	if the file has has been modified in the given branch but has deleted in the current branch
-	**OR**
-	if the file is new in the given branch but is not present in the current branch
-	**THEN**
+	-  if the file has been modified in the given branch but has not been modified in the current branch  <br>
+	**OR** <br>
+	if the file has has been modified in the given branch but has deleted in the current branch <br>
+	**OR**  <br>
+	if the file is new in the given branch but is not present in the current branch <br>
+	**THEN** <br>
 	check out the file into the current directory and add it to the staging area to commit at the end
 	
-	-  if the file has been modified in the current branch but has not been modified in the given branch 
-	**OR**
-	if the file has has been modified in the current branch but has deleted in the given branch
-	**OR**
-	if the file is new in the current branch but is not present in the given branch
-	**THEN**
+	-  if the file has been modified in the current branch but has not been modified in the given branch <br>
+	**OR** <br>
+	if the file has has been modified in the current branch but has deleted in the given branch <br>
+	**OR** <br>
+	if the file is new in the current branch but is not present in the given branch <br>
+	**THEN** <br>
 	do nothing with that file; the current branch's version is already the most up-to-date version
 	
 	- if the file has been deleted in the given branch but has not been modified in the current branch, then stage the file to be deleted in the current branch
