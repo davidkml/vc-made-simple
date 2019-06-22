@@ -18,7 +18,7 @@ Repository is already initialized
 ## status
 **Usage**: `vms status`
 
-**Description**: Display the status (current branch, other branches, staged files, unstaged changes, untracked files, subdirectories) of the working tree with format:
+**Description**: Displays the status (current branch, other branches, staged files, unstaged changes, untracked files, subdirectories) of the working tree with format:
 ```
 On branch <current_branch>  [<commitid>]
 
@@ -66,7 +66,7 @@ Repository is not initialized
 ## stage
 **Usage**: `vms stage [<filenames>] [<dirnames>]`
 
-**Description**: Add snapshots of the contents of the given files to the staging area. 
+**Description**: Adds snapshots of the contents of the given files to the staging area. 
 - preprocessing and normalization of given file and directory paths is performed before staging
 - if multiple arguments are given, each is staged sequentially
 - if directory is given, then stage all of the files in that directory
@@ -91,7 +91,7 @@ Repository is not initialized
 ## unstage
 **Usage**: `vms unstage [<filenames>] [<dirnames>]`
 
-**Description**: Remove the given files from the staging area
+**Description**: Removes the given files from the staging area
 - preprocessing and normalization of given file and directory paths is performed before unstaging
 - if multiple arguments are given, each is unstaged sequentially
 - if a file or directory path is given that doesn't correspond to a file in the staging area, fail silently and proceed to the next argument if any
@@ -112,7 +112,7 @@ Repository is not initialized
 ## commit
 **Usage**: `vms commit <message>`
 
-**Description**: Save the snapshots of the files in the staging area into the repository with an associated message and create a new commit in the history
+**Description**: Saves the snapshots of the files in the staging area into the repository with an associated message and create a new commit in the history
 - if a file in the staging area has been staged with the special value corresponding to deletion, remove the file from tracking
 - update the internal map of the commit with the contents of the staging area
 - move the snapshots from the `vms/cache` to the more permanent `vms/objects` directory
@@ -142,7 +142,7 @@ No changes staged to commit
 ## log
 **Usage**: `vms log`
 
-**Description**: Display a chronological log of the commit history with format:
+**Description**: Displays a chronological log of the commit history with format:
 ```
 ===
 commit  <commit_id>
@@ -165,7 +165,7 @@ Repository is not initialized
 ## checkout files
 **Usage**: `vms checkout files <commitid> [<filenames>]`
 
-**Description**: Restore the version of all (or optionally, only the given) files as they exist in the commit corresponding to the given id, overwriting the versions in the current working directory, if they exist.
+**Description**: Restores the version of all (or optionally, only the given) files as they exist in the commit corresponding to the given id, overwriting the versions in the current working directory, if they exist.
 - output warning prompt to user along with information about files that may be updated
 - if user answers `n`, abort without changing state
 - if user answers `y`, write or overwrite files in the current directory with the versions as they exist in the commit with the given id.
@@ -191,7 +191,7 @@ Please provide more characters or verify the accuracy of your input
 ## checkout branch
 **Usage**: `vms checkout branch <branchname>`
 
-**Description**: Switch branches and update files in the current working directory with the versions as they exist in the given branch.
+**Description**: Switches branches and update files in the current working directory with the versions as they exist in the given branch.
 - output warning prompt to user along with information about files that may be updated
 - if user answers `n`, abort without changing state
 - if user answers `y`, move the HEAD pointer to point to the given branch and write or overwrite files in the current directory with the versions as they exist in the commit with the given id.
@@ -221,27 +221,58 @@ Already on branch <branchname>
 ## mkbranch
 **Usage**: `vms mkbranch <branchname> [commitid]`
 
-**Description**:
+**Description**: Creates a new branch at the same location of your current branch (or optionally, at the location of the commit corresponding to the given id).
 
 **Failure cases**: 
-- If repository is not in initialized, abort and print to standard error:
+- if repository is not in initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
+```
+- if not enough arguments are given, abort and print to standard error:
+```
+Must provide name of branch to create and optionally the id to create it at
+usage: vms mkbranch <branchname> [commitid]
+```
+- if the given branch already exists, abort and print to standard error:
+```
+Branch <branchname> already exists
+  (use "vms checkout branch <branchname>" to move to it)
+```
+- if the given commit id does not uniquely match a commit in the repository, abort and print to standard error:
+```
+Branch not created
+Provided commit id <commitid> generated ambiguous or no matches
+Please provide more characters or verify the accuracy of your input
+  (use "vms log" to see log of commits)
 ```
 
 ## rmbranch
 **Usage**: `vms rmbranch <branchname>`
 
-**Description**:
+**Description**: Remove the branch with the given name.
 
 **Failure cases**: 
-- If repository is not in initialized, abort and print to standard error:
+- if repository is not in initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
 ```
-
+- if not enough arguments are given, abort and print to standard error:
+```
+Must provide name of branch to remove
+usage: vms rmbranch <branchname>
+```
+- if given branch does not exist, abort and print to standard error:
+```
+No branch named <branchname>
+  (use "vms status" to see list of available branches)
+```
+- if given branch is the current branch, abort and print to standard error:
+```
+Currently on branch <branchname>
+  (use "vms checkout branch <otherbranch>" to move to another branch)
+```
 ## info
 **Usage**: `vms info <commitid> [file]`
 
