@@ -101,7 +101,7 @@ Below is a reference list of commands and a brief description of their purpose. 
 
 - `vms rmbranch <branchname>`: Remove the branch with the given name.
 
-- `vms info <commitid> [file]`: Display information for the commit corresponding to the given id (or optionally, of the contents of the given file versioned in that commit).
+- `vms info <commitid> [file]`: Display information for the commit corresponding to the given id (or optionally, the contents of the given file as they exist in that commit).
 
 - `vms merge <branchname>`: Merge files from the given branch into the current branch, joining two development histories together.
 

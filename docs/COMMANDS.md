@@ -67,11 +67,12 @@ Sub-directories
 - any heading with no elements under it is hidden
 - detects modifications to files tracked by latest commit or in the staging area, including `modified` and `deleted`
 - staged files not tracked by latest commit are labeled as `new`
-- if a file has been staged (cached) but has since been deleted in the current working directory, it will show up under the` Changes not yet staged for commit` header as `deleted` and staging the file again will remove it from the staging area
+- if a file has been staged (cached) but has since been deleted in the current working directory, it will show up under the `Changes not yet staged for commit` header as `deleted` and staging the file again will remove it from the staging area
+- if a file has been staged (cached) but has since been modified in the current working directory, it will show up under the `Changes not yet staged for commit` header as `modified` and staging the file again will remove it from the staging area
 - staging a file that is not tracked moves it from the `Untracked files` header into the `Changes staged for commit` header
 
 **Failure cases**: 
-- if repository is not in initialized, abort and print to standard error:
+- if repository is not initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
@@ -88,7 +89,7 @@ Repository is not initialized
 - cache the contents of the file being staged to create a snapshot and reduce the requirements during the commit operation
 
 **Failure cases**: 
-- if repository is not in initialized, abort and print to standard error:
+- if repository is not initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
@@ -111,7 +112,7 @@ Repository is not initialized
 - if a file or directory path is given that doesn't correspond to a file in the staging area, fail silently and proceed to the next argument if any
 
 **Failure cases**: 
-- if repository is not in initialized, abort and print to standard error:
+- if repository is not initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
@@ -126,20 +127,20 @@ Repository is not initialized
 ## commit
 **Usage**: `vms commit <message>`
 
-**Description**: Saves the snapshots of the files in the staging area into the repository with an associated message and create a new commit in the history
+**Description**: Saves the snapshots of the files in the staging area into the repository with an associated message and adds a new commit in the history
+- create a new commit with an internal map updated with the contents of the staging area
 - if a file in the staging area has been staged with the special value corresponding to deletion, remove the file from tracking
-- update the internal map of the commit with the contents of the staging area
-- move the snapshots from the `vms/cache` to the more permanent `vms/objects` directory
-- write to the `vms/objects` directory using the first two characters of of the hash as a tag
-- change permissions of snapshots after moving to remove write access
+- move the snapshots of staged files from the `vms/cache` to the more permanent `vms/objects` directory
+- write to the `vms/objects` directory using the first two characters of the hash as a subdirectory, acting as a tag
+- after moving, change permissions of snapshots to remove write access
 - clear cache
 - clear staging area
 - update the log
 - update the position of the branch pointed to by HEAD
-- save the commit with an updated internal map into the  `vms/objects` directory
+- save the new commit into the  `vms/objects` directory
 
 **Failure cases**: 
-- if repository is not in initialized, abort and print to standard error:
+- if repository is not initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
@@ -162,15 +163,15 @@ No changes staged to commit
 commit  <commit_id>
 Date    <date_and_time>
 parent  <parent_commit_id>
+
 		[parent_commit_id2]
 
     <message>
 [...]
 ```
-- if the commit has no second parent, then it is not displayed
 
 **Failure cases**: 
-- if repository is not in initialized, abort and print to standard error:
+- if repository is not initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
@@ -185,7 +186,7 @@ Repository is not initialized
 - if user answers `y`, write or overwrite files in the current directory with the versions as they exist in the commit with the given id.
 
 **Failure cases**: 
-- if repository is not in initialized, abort and print to standard error:
+- if repository is not initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
@@ -212,7 +213,7 @@ Please provide more characters or verify the accuracy of your input
 - clear the staging area.
  
 **Failure cases**: 
-- if repository is not in initialized, abort and print to standard error:
+- if repository is not initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
@@ -238,7 +239,7 @@ Already on branch <branchname>
 **Description**: Creates a new branch at the same location of your current branch (or optionally, at the location of the commit corresponding to the given id).
 
 **Failure cases**: 
-- if repository is not in initialized, abort and print to standard error:
+- if repository is not initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
@@ -267,7 +268,7 @@ Please provide more characters or verify the accuracy of your input
 **Description**: Remove the branch with the given name.
 
 **Failure cases**: 
-- if repository is not in initialized, abort and print to standard error:
+- if repository is not initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
@@ -290,10 +291,10 @@ Currently on branch <branchname>
 ## info
 **Usage**: `vms info <commitid> [file]`
 
-**Description**: Display information for the commit corresponding to the given id (or optionally, of the contents of the given file versioned in that commit).
+**Description**: Display information for the commit corresponding to the given id (or optionally, the contents of the given file as they exist in that commit).
 
 **Failure cases**: 
-- if repository is not in initialized, abort and print to standard error:
+- if repository is not initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
@@ -378,7 +379,7 @@ usage: vms info <commitid> [filename]
 	- change the permissions of generated files
 
 **Failure cases**: 
-- if repository is not in initialized, abort and print to standard error:
+- if repository is not initialized, abort and print to standard error:
 ```
 Repository is not initialized
   (use "vms init" to initialize repository)
