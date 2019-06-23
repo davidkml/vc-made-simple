@@ -68,7 +68,7 @@ Sub-directories
 - detects modifications to files tracked by latest commit or in the staging area, including `modified` and `deleted`
 - staged files not tracked by latest commit are labeled as `new`
 - if a file has been staged (cached) but has since been deleted in the current working directory, it will show up under the `Changes not yet staged for commit` header as `deleted` and staging the file again will remove it from the staging area
-- if a file has been staged (cached) but has since been modified in the current working directory, it will show up under the `Changes not yet staged for commit` header as `modified` and staging the file again will remove it from the staging area
+- if a file has been staged (cached) but has since been modified in the current working directory, it will show up under the `Changes not yet staged for commit` header as `modified` and staging the file again will update the cache with the new version
 - staging a file that is not tracked moves it from the `Untracked files` header into the `Changes staged for commit` header
 
 **Failure cases**: 
