@@ -22,8 +22,20 @@ void remove_trailing_slash(char* dirpath) {
 int main(int argc, char* argv[]) {
 
     if (argc < 2) {
-        fprintf(stderr, "usage: %s <command> [<args>]\n", argv[0]);
-        //TODO: Add output of summary documentation of commands
+        fprintf(stderr, "usage: %s <command> [<args>]\n\n"
+                        "Here are some commands you might want to consider:\n\n"
+                        "    init      Create an empty Vms repository in the current directory\n"
+                        "    status    Display the status of the working tree\n"
+                        "    log       Display a log of the commit history\n"
+                        "    info      Display info for commit or versioned file\n"
+                        "    stage     Add file contents to the staging area\n"
+                        "    unstage   Remove file contents from the staging area\n"
+                        "    commit    Save staged changes to the repository\n"
+                        "    checkout  Restore files to working directory or switch branches\n"
+                        "    mkbranch  Create a new branch\n"
+                        "    rmbranch  Remove a branch\n"
+                        "    merge     Merge development histories together\n\n", argv[0]);
+        
         return -1;
     }
 
@@ -319,7 +331,7 @@ int main(int argc, char* argv[]) {
 
         } else if (strcmp(argv[1], "info") == 0) {
             if (argc < 3) {
-                fprintf(stderr, "Must provide name of commit to look up and optionally a filename\n"
+                fprintf(stderr, "Must provide id of commit to look up and optionally a filename\n"
                                 "usage: %s %s <commitid> [filename]\n", argv[0], argv[1]);
                 return -1;
             }
@@ -357,7 +369,8 @@ int main(int argc, char* argv[]) {
             }
 
             if (!is_valid_branch(argv[2])) {
-                fprintf(stderr, "No branch named \"%s\"\n", argv[2]);
+                fprintf(stderr, "No branch named \"%s\"\n"
+                                "  (use \"%s status\" to see list of available branches)\n", argv[2], argv[0]);
                 return -1;
             }
 
