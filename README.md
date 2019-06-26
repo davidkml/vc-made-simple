@@ -1,6 +1,6 @@
 # Vms, Version Control Made Simple
 
-Vms is a version control system designed for simplicity, inspired by the popular version control system Git.
+Vms is a version control system designed for simplicity, inspired by Git.
 
 Some of the features Vms has adopted from Git include:
 
@@ -10,11 +10,11 @@ Some of the features Vms has adopted from Git include:
 -   **data integrity and assurance** by comparing every file retrieved from the repository with the cryptographic hash of the file’s contents at the time it was committed— in this way, serving as a checksum, ensuring archived data cannot be corrupted or altered without the system knowing
 -   **an intermediate staging area** where users may review and manage changes before committing them to the repository
 
-Vms was implemented with the goal of maintaining many of the design philosophies, structures, and features that make Git a powerful version control system while also providing a simpler interface. It features a reduced set of commands and options, instead focusing on the use of easy-to-understand primitives to accomplish version control tasks. It was also designed to abstract lower level structures like the HEAD pointer, exhibit intuitive behavior and syntax, and provide a safe, performant, and robust experience. 
+Vms was implemented with the goal of maintaining many of the design philosophies, structures, and features that make Git a powerful version control system while also providing a simpler interface. It features a reduced set of commands and options, instead focusing on the use of easy-to-understand primitives to accomplish version control tasks. It was also designed to abstract lower level structures like the HEAD pointer, exhibit intuitive behavior and syntax, and provide a safe, fast, and robust experience. 
 
-This project was not developed to be a replacement for Git. At its core, it is a personal learning project started in my free time to develop a deeper understanding of the decisions and challenges underlying the design of a software system like Git.
+This project was not developed to be a replacement for Git. At its core, it is a personal learning project to develop a deeper understanding of the decisions and challenges underlying the design of a software system like Git.
 
-However, I still hope that the end product will somehow make version control more accessible to users of diverse background, whether it serves to be a simple alternative to some of the more complex version control systems or simply a stepping stone for learning the basics of version control.
+Nonetheless, I hope that the end product will contribute ideas for making version control more accessible to users of diverse backgrounds, whether by serving as a simple alternative to some of the more complex version control systems or a stepping stone for learning the basics of version control.
 
 ## Getting started
 
@@ -29,7 +29,7 @@ Before using Vms, please note that this is an early release primarily intended f
 - GNU Make
 - Boost 1.67.0 (or later)
 
-If you are on macOS and you have the Xcode Command Line Tools, you should already have a compatible C++ compiler and make utility. If you don't, then you can install them by opening the Mac Terminal application and typing the command:
+If you are on macOS and you have the Xcode Command Line Tools, you should already have a compatible C++ compiler and make utility. If you don't, then you can install them by opening the Terminal application and typing the command:
 ```bash
 xcode-select --install
 ```
@@ -43,7 +43,7 @@ Once you have Homebrew installed, you can install Boost by typing into your Term
 ```bash
 brew install boost
 ```
-Once installlation is complete, you can verify the Boost version with `brew info boost`.
+Once the installation is complete, you can verify the Boost version with `brew info boost`.
 
 With that, the preparation should be complete. If you have git installed, you may clone the source by moving with `cd` into the location you wish to store the application and inputting the command:
 ```bash
@@ -59,23 +59,23 @@ If no errors occurred and compilation was successful, then you are finished.
 
 ## How to use it
 
-**For those who only want to demo the application**, I have provided a simple bash script that will temporarily add the directory to your $PATH so the executable can be found by your system and move you into a new subdirectory called `sandbox` in which you can add files, modify files, and experiment with the application for the duration of Terminal session. To do this, move into the `vc-made-simple` directory and run:
+**For those who only want to demo the application**, I have provided a simple bash script that will temporarily add the directory to your $PATH variable and move you into a new subdirectory called `sandbox` in which you can add files, modify them, and experiment with the application for the duration of Terminal session. To do this, move into the `vc-made-simple` directory and run:
 ```bash
 source init_sandbox
 ```
 
-Every time you use the script, your previous directory will be deleted so you can start fresh,  so **be careful to not leave any important files in the `sandbox` directory!** 
+Every time you use the script, your previous directory will be deleted so you can start fresh,  so **be careful to not leave any important files in the** `sandbox` **directory!** 
 
 **Alternatively**, you may more permanently add the application to your $PATH by adding to your `~/.bash_profile` file the line:
 ```bash
 export PATH=/path/to/vc-made-simple/bin:$PATH
 ```
-where `/path/to/vc-made-simple/` should be replaced with the actual path to the directory in your computer. Then, to effect the change, run:
+where `/path/to/vc-made-simple/` should be replaced with the actual path to the directory in your file system. Then, to effect the change, run:
 ```bash
 source ~/.bash_profile
 ```
 
-To get started quickly or walk through a demonstration, take a look at the [Tutorial](docs/TUTORIAL.md).
+To get started quickly or walk through a demonstration of how to use Vms, take a look at the [Tutorial](docs/TUTORIAL.md).
 
 ### Commands
 
@@ -83,13 +83,13 @@ Below is a reference list of commands and a brief description of their purpose. 
 
 - `vms init`: Create an empty Vms repository.
 
-- `vms status`: Display the status of the working tree, including the current branch, other branches that exist, changes staged for commit, unstaged modifications to tracked files, and untracked files and directories.
+- `vms status`: Display the status of the working tree.
 
-- `vms stage [<filenames>] [<dirnames>]`: Add the contents of the given files as they currently exist to the staging area.
+- `vms stage [<filenames>] [<dirnames>]`: Add snapshots of the given files to the staging area.
 
-- `vms unstage [<filenames>] [<dirnames>]`: Remove the given files from the staging area.
+- `vms unstage [<filenames>] [<dirnames>]`: Remove the snapshot associated with the given files from the staging area.
 
-- `vms commit <message>`: Save the snapshots of the files in the staging area into the repository with an associated message and create a new commit in the history
+- `vms commit <message>`: Save the snapshots of the files in the staging area into the repository with an associated message and add a new commit to the history
 
 - `vms log`:  Display a chronological log of your commit history.
 

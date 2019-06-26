@@ -1,6 +1,6 @@
 # Commands
 
-Contents <br>
+**Contents** <br>
 [init](#init) <br>
 [status](#status) <br>
 [stage](#stage) <br>
@@ -32,7 +32,7 @@ Repository is already initialized
 ## status
 **Usage**: `vms status`
 
-**Description**: Displays the status (current branch, other branches, staged files, unstaged changes, untracked files, subdirectories) of the working tree with format:
+**Description**: Displays the status of the working tree with format:
 ```
 On branch <current_branch>  [<commitid>]
 
@@ -81,7 +81,7 @@ Repository is not initialized
 ## stage
 **Usage**: `vms stage [<filenames>] [<dirnames>]`
 
-**Description**: Adds snapshots of the contents of the given files to the staging area. 
+**Description**: Adds snapshots of the given files to the staging area. 
 - preprocessing and normalization of given file and directory paths is performed before staging
 - if multiple arguments are given, each is staged sequentially
 - if directory is given, then stage all of the files in that directory
@@ -106,7 +106,7 @@ Repository is not initialized
 ## unstage
 **Usage**: `vms unstage [<filenames>] [<dirnames>]`
 
-**Description**: Removes the given files from the staging area
+**Description**: Removes the snapshot associated with the given files from the staging area.
 - preprocessing and normalization of given file and directory paths is performed before unstaging
 - if multiple arguments are given, each is unstaged sequentially
 - if a file or directory path is given that doesn't correspond to a file in the staging area, fail silently and proceed to the next argument if any
@@ -127,7 +127,7 @@ Repository is not initialized
 ## commit
 **Usage**: `vms commit <message>`
 
-**Description**: Saves the snapshots of the files in the staging area into the repository with an associated message and adds a new commit in the history
+**Description**: Saves the snapshots of the files in the staging area into the repository with an associated message and adds a new commit to the history.
 - create a new commit with an internal map updated with the contents of the staging area
 - if a file in the staging area has been staged with the special value corresponding to deletion, remove the file from tracking
 - move the snapshots of staged files from the `vms/cache` to the more permanent `vms/objects` directory
