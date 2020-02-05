@@ -11,7 +11,7 @@ SRCEXT = cpp
 SOURCES = $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS = $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 
-CFLAGS = -Wall -g -fsanitize=address
+CFLAGS = -Wall -g 
 LIB = -lboost_iostreams -lboost_serialization -std=c++11
 # Don't forget to add dependencies on headers
 $(TARGET): $(OBJECTS)
