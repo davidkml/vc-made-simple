@@ -10,6 +10,10 @@ Some of the features Vms has adopted from Git include:
 - **data integrity and assurance** by comparing every file retrieved from the repository with the cryptographic hash of the file’s contents at the time it was committed— in this way, serving as a checksum, ensuring archived data cannot be corrupted or altered without the system knowing
 - **an intermediate staging area** where users may review and manage changes before committing them to the repository
 
+For a quick look at its functionality, see the [Tutorial](docs/TUTORIAL.md).
+
+To see all of the commands it supports, see the [Command Specification](docs/COMMANDS.md).
+
 Vms was implemented with the goal of maintaining many of the design philosophies, structures, and features that make Git a powerful version control system while also providing a simpler interface. It features a reduced set of commands and options, instead focusing on the use of easy-to-understand primitives to accomplish version control tasks. It was also designed to abstract lower level structures like the HEAD pointer, exhibit intuitive behavior and syntax, and provide a safe, fast, and robust experience.
 
 This project was not developed to be a replacement for Git. At its core, it is a personal learning project to develop a deeper understanding of the decisions and challenges underlying the design of a software system like Git.
@@ -89,11 +93,11 @@ where `/path/to/vc-made-simple/` should be replaced with the actual path to the 
 source ~/.bash_profile
 ```
 
-To get started quickly or walk through a demonstration of how to use Vms, take a look at the [Tutorial](docs/TUTORIAL.md).
+**To get started quickly or walk through a demonstration of how to use Vms, take a look at the [Tutorial](docs/TUTORIAL.md).**
 
 ### Commands
 
-Below is a reference list of commands and a brief description of their purpose. For more detailed specifications on their behavior, please see the [command specification](docs/COMMANDS.md).
+Below is a reference list of commands and a brief description of their purpose. **For more detailed specifications on their behavior, please see the [command specification](docs/COMMANDS.md).**
 
 - `vms init`: Create an empty Vms repository.
 
